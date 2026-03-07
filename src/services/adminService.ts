@@ -122,3 +122,36 @@ export const deleteFranchise = async (franchiseId: string) => {
   const response = await api.delete(`/api/v1/admin/franchise/${franchiseId}`);
   return response.data;
 };
+
+// ===== Bonus Management =====
+
+export const getRepurchasePools = async (page = 1, limit = 10) => {
+  const response = await api.get('/api/v1/admin/bonus/repurchase-pool', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getPoolQualifiers = async (poolId: string) => {
+  const response = await api.get(`/api/v1/admin/bonus/repurchase-qualifiers/${poolId}`);
+  return response.data;
+};
+
+export const getGlobalRepurchaseHistory = async (page = 1, limit = 20, memberId?: string) => {
+  const params: Record<string, any> = { page, limit };
+  if (memberId) params.memberId = memberId;
+  const response = await api.get('/api/v1/admin/bonus/repurchase-history', { params });
+  return response.data;
+};
+
+export const getLiveQualifiers = async (page = 1, limit = 20) => {
+  const response = await api.get('/api/v1/admin/bonus/live-qualifiers', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const triggerRepurchaseDistribution = async () => {
+  const response = await api.post('/api/v1/admin/bonus/trigger-repurchase-distribution');
+  return response.data;
+};

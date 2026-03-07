@@ -12,14 +12,15 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/lib/api';
 import { TreeNodeData } from './TreeNode';
-import { transformToD3Format, D3TreeNodeDatum, EmptyD3Node, ActiveD3Node } from './D3TreeNode';
+import { D3TreeNodeDatum, EmptyD3Node, ActiveD3Node } from './D3TreeNode';
+import { transformToD3Format } from './treeUtils';
 
 interface TreeApiResponse {
   data: TreeNodeData;
 }
 
 const fetchTreeData = async (depth: number = 3, memberId?: string): Promise<TreeNodeData> => {
-  const endpoint = memberId 
+  const endpoint = memberId
     ? `/api/v1/user/tree/${memberId}?depth=${depth}`
     : `/api/v1/user/tree_view?depth=${depth}`;
   const response = await api.get<TreeApiResponse>(endpoint);
@@ -52,7 +53,7 @@ const TreeSkeleton = () => (
     <Skeleton className="w-16 h-16 rounded-full" />
     <Skeleton className="w-20 h-12 mt-2 rounded-lg" />
     <Skeleton className="w-14 h-5 mt-1 rounded-full" />
-    
+
     <div className="flex gap-16 mt-12">
       <div className="flex flex-col items-center">
         <Skeleton className="w-14 h-14 rounded-full" />
@@ -67,11 +68,11 @@ const TreeSkeleton = () => (
 );
 
 // Navigation Breadcrumb
-const NavigationBreadcrumb = ({ 
-  history, 
+const NavigationBreadcrumb = ({
+  history,
   onNavigate,
-  onReset 
-}: { 
+  onReset
+}: {
   history: Array<{ id: string; name: string }>;
   onNavigate: (id: string) => void;
   onReset: () => void;
@@ -89,7 +90,7 @@ const NavigationBreadcrumb = ({
         <Home className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">My Network</span>
       </Button>
-      
+
       {history.map((item, index) => (
         <div key={item.id} className="flex items-center gap-2">
           <span className="text-muted-foreground">/</span>
@@ -111,11 +112,11 @@ const NavigationBreadcrumb = ({
 };
 
 // Depth Control Card
-const DepthControlCard = ({ 
-  depth, 
-  onApply 
-}: { 
-  depth: number; 
+const DepthControlCard = ({
+  depth,
+  onApply
+}: {
+  depth: number;
   onApply: (depth: number) => void;
 }) => {
   const [inputValue, setInputValue] = useState(depth.toString());
@@ -124,7 +125,7 @@ const DepthControlCard = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    
+
     const numValue = parseInt(value, 10);
     if (isNaN(numValue)) {
       setWarning(null);
@@ -139,11 +140,11 @@ const DepthControlCard = ({
 
   const handleApply = () => {
     let numValue = parseInt(inputValue, 10);
-    
+
     if (isNaN(numValue) || numValue < 1) {
       numValue = 1;
     }
-    
+
     setInputValue(numValue.toString());
     setWarning(null);
     onApply(numValue);
@@ -191,7 +192,7 @@ const DepthControlCard = ({
             Apply
           </Button>
         </div>
-        
+
         {warning ? (
           <p className="text-xs text-destructive mt-2 flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
@@ -202,7 +203,7 @@ const DepthControlCard = ({
             Enter any depth level. Higher values show more generations but may affect performance.
           </p>
         )}
-        
+
         {/* Quick select buttons */}
         <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border">
           <span className="text-xs text-muted-foreground mr-1 self-center">Quick:</span>
@@ -228,14 +229,14 @@ const DepthControlCard = ({
 };
 
 // Zoom controls component
-const ZoomControls = ({ 
-  onZoomIn, 
-  onZoomOut, 
+const ZoomControls = ({
+  onZoomIn,
+  onZoomOut,
   onReset,
-  zoom 
-}: { 
-  onZoomIn: () => void; 
-  onZoomOut: () => void; 
+  zoom
+}: {
+  onZoomIn: () => void;
+  onZoomOut: () => void;
   onReset: () => void;
   zoom: number;
 }) => (
@@ -259,16 +260,16 @@ const ZoomControls = ({
 // Search helper function - recursive search through tree
 const findNodeInTree = (node: D3TreeNodeDatum | null, searchTerm: string): D3TreeNodeDatum | null => {
   if (!node) return null;
-  
+
   const term = searchTerm.toLowerCase().trim();
   const name = node.name?.toLowerCase() || '';
   const memberId = node.attributes?.memberId?.toLowerCase() || '';
-  
+
   // Check if current node matches (skip empty nodes)
   if (!node.attributes?.isEmpty && (name.includes(term) || memberId.includes(term))) {
     return node;
   }
-  
+
   // Recursive check in children
   if (node.children) {
     for (const child of node.children) {
@@ -276,7 +277,7 @@ const findNodeInTree = (node: D3TreeNodeDatum | null, searchTerm: string): D3Tre
       if (found) return found;
     }
   }
-  
+
   return null;
 };
 
@@ -291,17 +292,18 @@ const D3GenealogyTree = () => {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { 
-    data: treeData, 
-    isLoading, 
-    isError, 
-    error, 
+  const {
+    data: treeData,
+    isLoading,
+    isError,
+    error,
     refetch,
-    isFetching 
+    isFetching
   } = useQuery({
     queryKey: ['genealogyTree', depth, currentRootId],
     queryFn: () => fetchTreeData(depth, currentRootId),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
     retry: 2,
   });
 
@@ -321,7 +323,7 @@ const D3GenealogyTree = () => {
 
   const handleNodeClick = useCallback((memberId: string) => {
     if (memberId === currentRootId || !memberId) return;
-    
+
     const findNodeName = (node: TreeNodeData | null, targetId: string): string | null => {
       if (!node) return null;
       if (node.memberId === targetId) return node.fullName;
@@ -329,7 +331,7 @@ const D3GenealogyTree = () => {
     };
 
     const nodeName = treeData ? findNodeName(treeData, memberId) : memberId;
-    
+
     setNavigationHistory(prev => [...prev, { id: memberId, name: nodeName || memberId }]);
     setCurrentRootId(memberId);
   }, [currentRootId, treeData]);
@@ -355,7 +357,7 @@ const D3GenealogyTree = () => {
       setHighlightedId(null);
       return;
     }
-    
+
     if (!d3TreeData) {
       toast({
         title: 'No data',
@@ -364,9 +366,9 @@ const D3GenealogyTree = () => {
       });
       return;
     }
-    
+
     const foundNode = findNodeInTree(d3TreeData as D3TreeNodeDatum, searchQuery);
-    
+
     if (foundNode && foundNode.attributes?.memberId) {
       setHighlightedId(foundNode.attributes.memberId);
       toast({
@@ -406,10 +408,10 @@ const D3GenealogyTree = () => {
 
     return (
       <g>
-        <foreignObject 
-          width={nodeWidth} 
-          height={nodeHeight} 
-          x={-nodeWidth / 2} 
+        <foreignObject
+          width={nodeWidth}
+          height={nodeHeight}
+          x={-nodeWidth / 2}
           y={-nodeHeight / 2}
           style={{ overflow: 'visible' }}
         >
@@ -417,7 +419,7 @@ const D3GenealogyTree = () => {
             {isEmpty ? (
               <EmptyD3Node />
             ) : (
-              <ActiveD3Node 
+              <ActiveD3Node
                 data={nodeData.attributes}
                 name={nodeData.name}
                 onNodeClick={handleNodeClick}
@@ -451,13 +453,13 @@ const D3GenealogyTree = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Genealogy Tree</h1>
           <p className="text-muted-foreground">
-            {isDrilledDown 
+            {isDrilledDown
               ? 'Viewing member network - click nodes to drill deeper'
               : 'View your binary network structure • Drag to pan, scroll to zoom'
             }
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {isDrilledDown && (
             <Button
@@ -526,7 +528,7 @@ const D3GenealogyTree = () => {
 
       {/* Navigation Breadcrumb */}
       {navigationHistory.length > 0 && (
-        <NavigationBreadcrumb 
+        <NavigationBreadcrumb
           history={navigationHistory}
           onNavigate={handleNavigateToHistoryItem}
           onReset={handleResetToMyNetwork}
@@ -546,9 +548,9 @@ const D3GenealogyTree = () => {
           </div>
           <TreeLegend />
         </CardHeader>
-        
+
         <CardContent className="p-0 relative">
-          <div 
+          <div
             ref={containerRef}
             className="w-full h-[70vh] bg-muted/20"
           >
@@ -601,7 +603,7 @@ const D3GenealogyTree = () => {
 
           {/* Zoom Controls */}
           {d3TreeData && !isLoading && !isError && (
-            <ZoomControls 
+            <ZoomControls
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
               onReset={handleResetView}

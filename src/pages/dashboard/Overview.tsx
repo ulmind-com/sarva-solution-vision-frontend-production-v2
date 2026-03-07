@@ -4,16 +4,19 @@ import { getWalletSummary, getUserTree } from '@/services/userService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  TrendingUp, 
-  Users, 
-  Wallet, 
-  Award, 
-  Copy, 
+import {
+  TrendingUp,
+  Users,
+  Wallet,
+  Award,
+  Copy,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  LineChart,
+  ShoppingBag
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 const Overview = () => {
   const { user } = useAuthStore();
@@ -91,35 +94,49 @@ const Overview = () => {
     changeType: 'positive' | 'negative' | 'neutral';
     icon: typeof TrendingUp;
   }> = [
-    {
-      title: 'Total Earnings',
-      value: `₹${walletData.totalEarnings.toLocaleString()}`,
-      change: 'Lifetime',
-      changeType: 'neutral',
-      icon: TrendingUp
-    },
-    {
-      title: 'Wallet Balance',
-      value: `₹${walletData.availableBalance.toLocaleString()}`,
-      change: 'Available',
-      changeType: 'positive',
-      icon: Wallet
-    },
-    {
-      title: 'Member ID',
-      value: memberId || 'N/A',
-      change: 'Your unique ID',
-      changeType: 'neutral',
-      icon: Users
-    },
-    {
-      title: 'Current Rank',
-      value: rank,
-      change: 'Keep growing!',
-      changeType: 'neutral',
-      icon: Award
-    }
-  ];
+      {
+        title: 'Total Earnings',
+        value: `₹${walletData.totalEarnings.toLocaleString()}`,
+        change: 'Lifetime',
+        changeType: 'neutral',
+        icon: TrendingUp
+      },
+      {
+        title: 'Wallet Balance',
+        value: `₹${walletData.availableBalance.toLocaleString()}`,
+        change: 'Available',
+        changeType: 'positive',
+        icon: Wallet
+      },
+      {
+        title: 'Member ID',
+        value: memberId || 'N/A',
+        change: 'Your unique ID',
+        changeType: 'neutral',
+        icon: Users
+      },
+      {
+        title: 'Current Rank',
+        value: rank,
+        change: 'Keep growing!',
+        changeType: 'neutral',
+        icon: Award
+      },
+      {
+        title: 'Lifetime BV',
+        value: `${((user as any)?.totalBV || 0).toLocaleString()} BV`,
+        change: 'Total accumulated BV',
+        changeType: 'neutral',
+        icon: LineChart
+      },
+      {
+        title: 'Monthly Personal BV',
+        value: `${((user as any)?.thisMonthBV || (user as any)?.selfPurchase?.thisMonthBV || 0).toLocaleString()} BV`,
+        change: `Reset every month (${format(new Date(), 'MMMM')})`,
+        changeType: 'neutral',
+        icon: ShoppingBag
+      }
+    ];
 
   const recentActivity = [
     { type: 'info', message: 'Welcome to Sarva Solution Vision!', time: 'Just now' },
@@ -139,9 +156,9 @@ const Overview = () => {
           Copy Referral Link
         </Button>
       </div>
-      
+
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.title} className="border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -165,11 +182,10 @@ const Overview = () => {
                     {stat.changeType === 'negative' && (
                       <ArrowDownRight className="h-3 w-3 text-destructive" />
                     )}
-                    <span className={`text-xs ${
-                      stat.changeType === 'positive' ? 'text-primary' : 
-                      stat.changeType === 'negative' ? 'text-destructive' : 
-                      'text-muted-foreground'
-                    }`}>
+                    <span className={`text-xs ${stat.changeType === 'positive' ? 'text-primary' :
+                      stat.changeType === 'negative' ? 'text-destructive' :
+                        'text-muted-foreground'
+                      }`}>
                       {stat.change}
                     </span>
                   </div>
@@ -179,7 +195,7 @@ const Overview = () => {
           </Card>
         ))}
       </div>
-      
+
       {/* Team Status */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-border">
@@ -219,7 +235,7 @@ const Overview = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="border-border">
           <CardHeader>
             <CardTitle className="text-foreground">Recent Activity</CardTitle>
@@ -239,7 +255,7 @@ const Overview = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Referral Card */}
       <Card className="border-border bg-primary text-primary-foreground">
         <CardContent className="pt-6">
@@ -250,8 +266,8 @@ const Overview = () => {
                 Share your unique referral link and grow your network!
               </p>
             </div>
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               onClick={copyReferralLink}
               className="gap-2"
             >

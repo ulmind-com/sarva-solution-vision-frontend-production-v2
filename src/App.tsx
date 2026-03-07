@@ -29,6 +29,7 @@ import CappingReport from "./pages/dashboard/CappingReport";
 import IncomeReport from "./pages/dashboard/IncomeReport";
 import FastTrackBonus from "./pages/dashboard/FastTrackBonus";
 import StarMatchingBonus from "./pages/dashboard/StarMatchingBonus";
+import RepurchaseBonus from "./pages/dashboard/incomes/RepurchaseBonus";
 import WelcomeLetter from "./pages/dashboard/WelcomeLetter";
 import ProductCatalog from "./pages/user/ProductCatalog";
 
@@ -38,6 +39,11 @@ import AdminHome from "./pages/admin/AdminHome";
 import UserManagement from "./pages/admin/UserManagement";
 import UserDetail from "./pages/admin/UserDetail";
 import PayoutRequests from "./pages/admin/PayoutRequests";
+
+// Admin - Bonus Management
+import RepurchasePools from "./pages/admin/bonus/RepurchasePools";
+import LiveQualifiers from "./pages/admin/bonus/LiveQualifiers";
+import GlobalRepurchaseHistory from "./pages/admin/bonus/RepurchaseHistory";
 
 // Admin - Products
 import AddProduct from "./pages/admin/products/AddProduct";
@@ -64,16 +70,16 @@ const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode; requireAdmin?: boolean }) => {
   const { user, token } = useAuthStore();
-  
+
   if (!user || !token) {
     return <Navigate to="/login" replace />;
   }
-  
+
   // Admin check - redirect non-admin users to dashboard profile
   if (requireAdmin && user.role !== 'admin') {
     return <Navigate to="/dashboard/profile" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -88,7 +94,7 @@ const AppRoutes = () => {
       <Route path="/franchise/login" element={<FranchiseLogin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
-      
+
       {/* Dashboard Routes */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
@@ -167,6 +173,13 @@ const AppRoutes = () => {
           </DashboardLayout>
         </ProtectedRoute>
       } />
+      <Route path="/dashboard/incomes/self-repurchase" element={
+        <ProtectedRoute>
+          <DashboardLayout>
+            <RepurchaseBonus />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
       <Route path="/dashboard/incomes/:type" element={
         <ProtectedRoute>
           <DashboardLayout>
@@ -188,7 +201,7 @@ const AppRoutes = () => {
           </DashboardLayout>
         </ProtectedRoute>
       } />
-      
+
       {/* Admin Routes */}
       <Route path="/admin" element={
         <ProtectedRoute requireAdmin>
@@ -225,7 +238,30 @@ const AppRoutes = () => {
           </AdminLayout>
         </ProtectedRoute>
       } />
-      
+
+      {/* Admin - Bonus Management */}
+      <Route path="/admin/bonus/repurchase/pools" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <RepurchasePools />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/bonus/repurchase/live" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <LiveQualifiers />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/bonus/repurchase/history" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <GlobalRepurchaseHistory />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+
       {/* Admin - Product Management */}
       <Route path="/admin/products/add" element={
         <ProtectedRoute requireAdmin>
@@ -241,7 +277,7 @@ const AppRoutes = () => {
           </AdminLayout>
         </ProtectedRoute>
       } />
-      
+
       {/* Admin - Stock Management */}
       <Route path="/admin/stock/dashboard" element={
         <ProtectedRoute requireAdmin>
@@ -250,7 +286,7 @@ const AppRoutes = () => {
           </AdminLayout>
         </ProtectedRoute>
       } />
-      
+
       {/* Admin - Franchise Management */}
       <Route path="/admin/franchise/add" element={
         <ProtectedRoute requireAdmin>
@@ -287,14 +323,14 @@ const AppRoutes = () => {
           </AdminLayout>
         </ProtectedRoute>
       } />
-      
+
       {/* Franchise Portal Routes */}
       <Route path="/franchise/dashboard" element={<FranchiseDashboard />} />
       <Route path="/franchise/inventory" element={<FranchiseInventory />} />
       <Route path="/franchise/sale/create" element={<FranchiseCreateBill />} />
       <Route path="/franchise/request-stock" element={<FranchiseRequestStock />} />
       <Route path="/franchise/order-history" element={<FranchiseOrderHistory />} />
-      
+
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>

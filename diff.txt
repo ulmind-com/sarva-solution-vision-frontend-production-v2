@@ -1,0 +1,10 @@
+﻿commit 649f382ff023fa5c8d390a77aa9d7ff745143cb2
+Author: Samiran2004 <samiran.samanta.dev@gmail.com>
+Date:   Fri Mar 6 21:10:44 2026 +0530
+
+    2nd phase start
+
+M	src/controllers/user/activate_user.controller.js
+M	src/controllers/user/profile.controller.js
+M	src/controllers/user/userFinancial.controller.js
+M	src/services/business/mlm.service.js

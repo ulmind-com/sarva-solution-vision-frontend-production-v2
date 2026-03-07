@@ -1,0 +1,150 @@
+﻿commit 649f382ff023fa5c8d390a77aa9d7ff745143cb2
+Author: Samiran2004 <samiran.samanta.dev@gmail.com>
+Date:   Fri Mar 6 21:10:44 2026 +0530
+
+    2nd phase start
+
+diff --git a/src/controllers/user/activate_user.controller.js b/src/controllers/user/activate_user.controller.js
+index 41cf93e..6e93da2 100644
+--- a/src/controllers/user/activate_user.controller.js
++++ b/src/controllers/user/activate_user.controller.js
+@@ -82,7 +82,12 @@ export const activateUser = asyncHandler(async (req, res) => {
+         new ApiResponse(200, {
+             memberId: user.memberId,
+             status: user.status,
+-            personalBV: userFinance.personalBV
++            personalBV: userFinance.personalBV,
++            totalBV: userFinance.totalBV,
++            personalPV: userFinance.personalPV,
++            totalPV: userFinance.totalPV,
++            leftLegBV: userFinance.leftLegBV,
++            rightLegBV: userFinance.rightLegBV
+         }, 'User activated successfully. BV Propagated.')
+     );
+ });
+diff --git a/src/controllers/user/profile.controller.js b/src/controllers/user/profile.controller.js
+index ca0e563..e42d18a 100644
+--- a/src/controllers/user/profile.controller.js
++++ b/src/controllers/user/profile.controller.js
+@@ -31,7 +31,11 @@ export const getFirstPurchaseStatus = asyncHandler(async (req, res) => {
+ 
+     return res.status(200).json(
+         new ApiResponse(200, {
+-            isFirstPurchaseDone: user.isFirstPurchaseDone
++            isFirstPurchaseDone: user.isFirstPurchaseDone,
++            personalPV: user.personalPV,
++            totalPV: user.totalPV,
++            personalBV: user.personalBV,
++            totalBV: user.totalBV
+         }, 'First purchase status fetched successfully')
+     );
+ });
+diff --git a/src/controllers/user/userFinancial.controller.js b/src/controllers/user/userFinancial.controller.js
+index 6d49780..c7b296b 100644
+--- a/src/controllers/user/userFinancial.controller.js
++++ b/src/controllers/user/userFinancial.controller.js
+@@ -117,7 +117,7 @@ export const getTree = asyncHandler(async (req, res) => {
+  */
+ export const getBonusStatus = asyncHandler(async (req, res) => {
+     const finance = await UserFinance.findOne({ user: req.user._id })
+-        .select('fastTrack starMatchingBonus starMatching wallet');
++        .select('fastTrack starMatchingBonus starMatching wallet leftLegBV rightLegBV totalBV leftLegPV rightLegPV totalPV');
+ 
+     if (!finance) throw new ApiError(404, 'Financial record not found');
+ 
+@@ -141,6 +141,12 @@ export const getBonusStatus = asyncHandler(async (req, res) => {
+                 pendingRight: finance.fastTrack.pendingPairRight,
+                 carryForwardLeft: finance.fastTrack.carryForwardLeft,
+                 carryForwardRight: finance.fastTrack.carryForwardRight,
++                leftLegBV: finance.leftLegBV,
++                rightLegBV: finance.rightLegBV,
++                totalBV: finance.totalBV,
++                leftLegPV: finance.leftLegPV,
++                rightLegPV: finance.rightLegPV,
++                totalPV: finance.totalPV,
+                 totalEarned: finance.fastTrack.totalEarned,
+                 overallTotalEarnings: finance.wallet.totalEarnings, // Added as requested
+                 history: fastTrackHistory
+@@ -153,6 +159,12 @@ export const getBonusStatus = asyncHandler(async (req, res) => {
+                 carryForwardLeft: finance.starMatchingBonus.carryForwardStarsLeft,
+                 carryForwardRight: finance.starMatchingBonus.carryForwardStarsRight,
+                 accumulatedStars: finance.starMatching,
++                leftLegBV: finance.leftLegBV,
++                rightLegBV: finance.rightLegBV,
++                totalBV: finance.totalBV,
++                leftLegPV: finance.leftLegPV,
++                rightLegPV: finance.rightLegPV,
++                totalPV: finance.totalPV,
+                 totalEarned: finance.starMatchingBonus.totalEarned,
+                 history: starMatchingHistory
+             }
+@@ -165,7 +177,7 @@ export const getBonusStatus = asyncHandler(async (req, res) => {
+  */
+ export const getFastTrackBonusStatus = asyncHandler(async (req, res) => {
+     const finance = await UserFinance.findOne({ user: req.user._id })
+-        .select('fastTrack wallet');
++        .select('fastTrack wallet leftLegBV rightLegBV totalBV leftLegPV rightLegPV totalPV');
+ 
+     if (!finance) throw new ApiError(404, 'Financial record not found');
+ 
+@@ -182,6 +194,12 @@ export const getFastTrackBonusStatus = asyncHandler(async (req, res) => {
+             pendingRight: finance.fastTrack.pendingPairRight,
+             carryForwardLeft: finance.fastTrack.carryForwardLeft,
+             carryForwardRight: finance.fastTrack.carryForwardRight,
++            leftLegBV: finance.leftLegBV,
++            rightLegBV: finance.rightLegBV,
++            totalBV: finance.totalBV,
++            leftLegPV: finance.leftLegPV,
++            rightLegPV: finance.rightLegPV,
++            totalPV: finance.totalPV,
+             totalEarned: finance.fastTrack.totalEarned,
+             overallTotalEarnings: finance.wallet.totalEarnings, // Added as requested
+             history
+@@ -194,7 +212,7 @@ export const getFastTrackBonusStatus = asyncHandler(async (req, res) => {
+  */
+ export const getStarMatchingBonusStatus = asyncHandler(async (req, res) => {
+     const finance = await UserFinance.findOne({ user: req.user._id })
+-        .select('starMatchingBonus starMatching');
++        .select('starMatchingBonus starMatching leftLegBV rightLegBV totalBV leftLegPV rightLegPV totalPV');
+ 
+     if (!finance) throw new ApiError(404, 'Financial record not found');
+ 
+@@ -212,6 +230,12 @@ export const getStarMatchingBonusStatus = asyncHandler(async (req, res) => {
+             carryForwardLeft: finance.starMatchingBonus.carryForwardStarsLeft,
+             carryForwardRight: finance.starMatchingBonus.carryForwardStarsRight,
+             accumulatedStars: finance.starMatching,
++            leftLegBV: finance.leftLegBV,
++            rightLegBV: finance.rightLegBV,
++            totalBV: finance.totalBV,
++            leftLegPV: finance.leftLegPV,
++            rightLegPV: finance.rightLegPV,
++            totalPV: finance.totalPV,
+             totalEarned: finance.starMatchingBonus.totalEarned,
+             history
+         }, 'Star Matching Bonus status fetched')
+diff --git a/src/services/business/mlm.service.js b/src/services/business/mlm.service.js
+index b216335..58e404c 100644
+--- a/src/services/business/mlm.service.js
++++ b/src/services/business/mlm.service.js
+@@ -444,7 +444,7 @@ export const mlmService = {
+ 
+         // Helper to find checking finance for stars (bulk fetch)
+         const allUserIds = [rootNode._id, ...descendants.map(d => d._id)];
+-        const finances = await UserFinance.find({ user: { $in: allUserIds } }).select('user isStar leftLegBV rightLegBV').lean();
++        const finances = await UserFinance.find({ user: { $in: allUserIds } }).select('user isStar leftLegBV rightLegBV leftLegPV rightLegPV').lean();
+         const financeMap = new Map();
+         finances.forEach(f => financeMap.set(f.user.toString(), f));
+ 
+@@ -479,9 +479,11 @@ export const mlmService = {
+                 leftTeamCount: leftTeamCount,
+                 rightTeamCount: rightTeamCount,
+ 
+-                // Retaining BV info
++                // Retaining BV/PV info
+                 leftLegBV: finance?.leftLegBV || 0,
+                 rightLegBV: finance?.rightLegBV || 0,
++                leftLegPV: finance?.leftLegPV || 0,
++                rightLegPV: finance?.rightLegPV || 0,
+ 
+                 // Stars need to be counted? 
+                 // If we didn't store "leftLegStars", we can't easily deliver it without recursion.

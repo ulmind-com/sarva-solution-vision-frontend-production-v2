@@ -41,6 +41,8 @@ export interface TreeNodeData {
   // Business Volume
   leftLegBV?: number;
   rightLegBV?: number;
+  thisMonthLeftLegBV?: number;
+  thisMonthRightLegBV?: number;
   // Stars
   leftLegStars?: number;
   rightLegStars?: number;
@@ -58,52 +60,52 @@ interface TreeNodeProps {
 
 const getRankStyles = (rank: string): { ring: string; badge: string; glow: string } => {
   const rankLower = rank?.toLowerCase() || '';
-  
+
   if (rankLower.includes('crown')) {
-    return { 
-      ring: 'ring-4 ring-chart-4', 
+    return {
+      ring: 'ring-4 ring-chart-4',
       badge: 'bg-chart-4 text-foreground',
       glow: 'shadow-[0_0_20px_rgba(var(--chart-4),0.4)]'
     };
   }
   if (rankLower.includes('diamond')) {
-    return { 
-      ring: 'ring-4 ring-chart-1', 
+    return {
+      ring: 'ring-4 ring-chart-1',
       badge: 'bg-chart-1 text-primary-foreground',
       glow: 'shadow-[0_0_20px_rgba(var(--chart-1),0.4)]'
     };
   }
   if (rankLower.includes('platinum')) {
-    return { 
-      ring: 'ring-4 ring-chart-3', 
+    return {
+      ring: 'ring-4 ring-chart-3',
       badge: 'bg-chart-3 text-primary-foreground',
       glow: 'shadow-[0_0_15px_rgba(var(--chart-3),0.3)]'
     };
   }
   if (rankLower.includes('gold')) {
-    return { 
-      ring: 'ring-4 ring-chart-2', 
+    return {
+      ring: 'ring-4 ring-chart-2',
       badge: 'bg-chart-2 text-foreground',
       glow: 'shadow-[0_0_15px_rgba(var(--chart-2),0.3)]'
     };
   }
   if (rankLower.includes('silver')) {
-    return { 
-      ring: 'ring-3 ring-muted-foreground/50', 
+    return {
+      ring: 'ring-3 ring-muted-foreground/50',
       badge: 'bg-muted text-muted-foreground',
       glow: ''
     };
   }
   if (rankLower.includes('bronze')) {
-    return { 
-      ring: 'ring-3 ring-secondary', 
+    return {
+      ring: 'ring-3 ring-secondary',
       badge: 'bg-secondary text-secondary-foreground',
       glow: ''
     };
   }
   // Default for Associate, Starter, etc.
-  return { 
-    ring: 'ring-3 ring-primary', 
+  return {
+    ring: 'ring-3 ring-primary',
     badge: 'bg-primary text-primary-foreground',
     glow: 'shadow-[0_0_12px_rgba(var(--primary),0.25)]'
   };
@@ -123,12 +125,12 @@ const EmptyNode = () => (
   </motion.div>
 );
 
-const NodeCard = ({ 
-  data, 
+const NodeCard = ({
+  data,
   onNodeClick,
-  isRoot 
-}: { 
-  data: TreeNodeData; 
+  isRoot
+}: {
+  data: TreeNodeData;
   onNodeClick?: (memberId: string) => void;
   isRoot?: boolean;
 }) => {
@@ -171,7 +173,7 @@ const NodeCard = ({
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              
+
               {/* Drill-down indicator for nodes with children */}
               {hasChildren && (
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -181,7 +183,7 @@ const NodeCard = ({
             </div>
 
             {/* Glassmorphism Info Badge */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -204,9 +206,9 @@ const NodeCard = ({
             </motion.div>
           </motion.div>
         </TooltipTrigger>
-        
-        <TooltipContent 
-          side="right" 
+
+        <TooltipContent
+          side="right"
           className="p-0 overflow-hidden bg-popover/95 backdrop-blur-md border-border/50 shadow-xl rounded-xl max-w-[240px]"
         >
           <div className="p-4 space-y-3">
@@ -223,21 +225,21 @@ const NodeCard = ({
                 <Badge className={cn('text-[10px] mt-0.5', badge)}>{data.rank}</Badge>
               </div>
             </div>
-            
+
             {/* Details Grid */}
             <div className="space-y-2 text-xs">
               <div className="flex justify-between items-center py-1.5 border-b border-border/30">
                 <span className="text-muted-foreground">Member ID</span>
                 <span className="font-mono font-medium text-foreground">{data.memberId}</span>
               </div>
-              
+
               {data.parentId && (
                 <div className="flex justify-between items-center py-1.5 border-b border-border/30">
                   <span className="text-muted-foreground">Parent ID</span>
                   <span className="font-mono font-medium text-primary">{data.parentId}</span>
                 </div>
               )}
-              
+
               {data.position !== 'root' && (
                 <div className="flex justify-between items-center py-1.5 border-b border-border/30">
                   <span className="text-muted-foreground">Position</span>
@@ -246,7 +248,7 @@ const NodeCard = ({
                   </Badge>
                 </div>
               )}
-              
+
               {data.joiningDate && (
                 <div className="flex justify-between items-center py-1.5 border-b border-border/30">
                   <span className="text-muted-foreground">Joined</span>
@@ -255,14 +257,14 @@ const NodeCard = ({
                   </span>
                 </div>
               )}
-              
+
               {data.directSponsors !== undefined && (
                 <div className="flex justify-between items-center py-1.5 border-b border-border/30">
                   <span className="text-muted-foreground">Direct Sponsors</span>
                   <span className="font-semibold text-foreground">{data.directSponsors}</span>
                 </div>
               )}
-              
+
               {data.totalDownline !== undefined && (
                 <div className="flex justify-between items-center py-1.5">
                   <span className="text-muted-foreground">Total Downline</span>
@@ -270,7 +272,7 @@ const NodeCard = ({
                 </div>
               )}
             </div>
-            
+
             {/* Click hint */}
             <div className="pt-2 border-t border-border/30">
               <p className="text-[10px] text-muted-foreground text-center">
@@ -287,11 +289,11 @@ const NodeCard = ({
 // Orthogonal (right-angle) connector component - high contrast, corporate org chart style
 const TreeConnectors = () => {
   const verticalHeight = 20;
-  
+
   return (
     <div className="flex flex-col items-center">
       {/* Vertical line down from parent */}
-      <div 
+      <div
         className="w-0.5 bg-muted-foreground/70 dark:bg-muted-foreground/60"
         style={{ height: verticalHeight }}
       />
@@ -305,7 +307,7 @@ const ChildrenConnectorWrapper = ({ children }: { children: React.ReactNode }) =
     <div className="relative">
       {/* Horizontal bar spanning across children */}
       <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-muted-foreground/70 dark:bg-muted-foreground/60" />
-      
+
       {/* Children container */}
       <div className="flex gap-12 lg:gap-16">
         {children}
@@ -338,7 +340,7 @@ const TreeNode = ({ node, level, maxLevel = 3, onNodeClick, isRoot = false }: Tr
   const showChildren = level < maxLevel;
 
   return (
-    <motion.div 
+    <motion.div
       className="flex flex-col items-center"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -355,20 +357,20 @@ const TreeNode = ({ node, level, maxLevel = 3, onNodeClick, isRoot = false }: Tr
           <ChildrenConnectorWrapper>
             {/* Left child */}
             <ChildConnector>
-              <TreeNode 
-                node={node.left} 
-                level={level + 1} 
-                maxLevel={maxLevel} 
+              <TreeNode
+                node={node.left}
+                level={level + 1}
+                maxLevel={maxLevel}
                 onNodeClick={onNodeClick}
               />
             </ChildConnector>
 
             {/* Right child */}
             <ChildConnector>
-              <TreeNode 
-                node={node.right} 
-                level={level + 1} 
-                maxLevel={maxLevel} 
+              <TreeNode
+                node={node.right}
+                level={level + 1}
+                maxLevel={maxLevel}
                 onNodeClick={onNodeClick}
               />
             </ChildConnector>

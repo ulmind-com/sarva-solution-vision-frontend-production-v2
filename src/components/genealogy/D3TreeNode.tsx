@@ -35,6 +35,8 @@ export interface D3TreeNodeDatum {
     // Business Volume
     leftLegBV?: number;
     rightLegBV?: number;
+    thisMonthLeftLegBV?: number;
+    thisMonthRightLegBV?: number;
     // Stars
     leftLegStars?: number;
     rightLegStars?: number;
@@ -42,72 +44,14 @@ export interface D3TreeNodeDatum {
   children?: D3TreeNodeDatum[];
 }
 
-// Transform API data to D3 tree format
-export const transformToD3Format = (node: TreeNodeData | null, position: 'root' | 'left' | 'right' = 'root'): D3TreeNodeDatum => {
-  if (!node) {
-    return {
-      name: 'Empty',
-      attributes: {
-        memberId: '',
-        fullName: 'Empty Slot',
-        rank: '',
-        position,
-        isEmpty: true,
-      },
-    };
-  }
 
-  const children: D3TreeNodeDatum[] = [];
-  
-  // Always add both children for binary structure (even if null)
-  if (node.left !== null || node.right !== null) {
-    children.push(transformToD3Format(node.left, 'left'));
-    children.push(transformToD3Format(node.right, 'right'));
-  }
-
-  return {
-    name: node.fullName,
-    attributes: {
-      memberId: node.memberId,
-      fullName: node.fullName,
-      rank: node.rank,
-      position: node.position || position,
-      avatar: node.avatar,
-      profileImage: node.profileImage,
-      joiningDate: node.joiningDate,
-      totalDownline: node.totalDownline,
-      parentId: node.parentId,
-      sponsorId: node.sponsorId,
-      directSponsors: node.directSponsors,
-      isEmpty: false,
-      isActive: node.isActive ?? (node.status?.toLowerCase() === 'active'),
-      isStar: (node as any).isStar ?? false,
-      status: node.status,
-      // Complete Team Stats
-      leftCompleteActive: node.leftDirectActive ?? node.leftCompleteActive ?? 0,
-      leftCompleteInactive: node.leftDirectInactive ?? node.leftCompleteInactive ?? 0,
-      rightCompleteActive: node.rightDirectActive ?? node.rightCompleteActive ?? 0,
-      rightCompleteInactive: node.rightDirectInactive ?? node.rightCompleteInactive ?? 0,
-      // Total Team Counts
-      leftTeamCount: node.leftTeamCount ?? 0,
-      rightTeamCount: node.rightTeamCount ?? 0,
-      // Business Volume
-      leftLegBV: node.leftLegBV ?? 0,
-      rightLegBV: node.rightLegBV ?? 0,
-      // Stars
-      leftLegStars: node.leftLegStars ?? 0,
-      rightLegStars: node.rightLegStars ?? 0,
-    },
-    children: children.length > 0 ? children : undefined,
-  };
-};
 
 const getRankStyles = (rank: string): { ring: string; badge: string; glow: string; border: string } => {
   const rankLower = rank?.toLowerCase() || '';
-  
+
   // SSVPL Legend - Ultimate gradient ring
   if (rankLower.includes('ssvpl')) {
-    return { 
+    return {
       ring: 'ring-4 ring-purple-500 ring-offset-2 ring-offset-background',
       badge: 'bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 text-white',
       glow: 'shadow-[0_0_35px_rgba(168,85,247,0.8)]',
@@ -116,7 +60,7 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
   }
   // Legend (non-SSVPL) - Black/Gold
   if (rankLower.includes('legend')) {
-    return { 
+    return {
       ring: 'ring-4 ring-amber-500 ring-offset-2 ring-offset-background',
       badge: 'bg-neutral-900 text-amber-400',
       glow: 'shadow-[0_0_30px_rgba(245,158,11,0.7)]',
@@ -125,7 +69,7 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
   }
   // Royal - Deep Gold
   if (rankLower.includes('royal')) {
-    return { 
+    return {
       ring: 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-background',
       badge: 'bg-yellow-600 text-white',
       glow: 'shadow-[0_0_28px_rgba(202,138,4,0.6)]',
@@ -134,7 +78,7 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
   }
   // Elite - Silver/Red shield
   if (rankLower.includes('elite')) {
-    return { 
+    return {
       ring: 'ring-4 ring-red-500 ring-offset-2 ring-offset-background',
       badge: 'bg-slate-500 text-white',
       glow: 'shadow-[0_0_25px_rgba(239,68,68,0.6)]',
@@ -143,7 +87,7 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
   }
   // Crown / Ambassador
   if (rankLower.includes('crown') || rankLower.includes('ambassador')) {
-    return { 
+    return {
       ring: 'ring-4 ring-purple-600 ring-offset-2 ring-offset-background',
       badge: 'bg-purple-600 text-white',
       glow: 'shadow-[0_0_25px_rgba(147,51,234,0.5)]',
@@ -151,7 +95,7 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
     };
   }
   if (rankLower.includes('sapphire')) {
-    return { 
+    return {
       ring: 'ring-4 ring-blue-700 ring-offset-2 ring-offset-background',
       badge: 'bg-blue-700 text-white',
       glow: 'shadow-[0_0_25px_rgba(29,78,216,0.5)]',
@@ -159,7 +103,7 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
     };
   }
   if (rankLower.includes('emerald')) {
-    return { 
+    return {
       ring: 'ring-4 ring-emerald-600 ring-offset-2 ring-offset-background',
       badge: 'bg-emerald-600 text-white',
       glow: 'shadow-[0_0_25px_rgba(5,150,105,0.5)]',
@@ -167,7 +111,7 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
     };
   }
   if (rankLower.includes('ruby')) {
-    return { 
+    return {
       ring: 'ring-4 ring-red-600 ring-offset-2 ring-offset-background',
       badge: 'bg-red-600 text-white',
       glow: 'shadow-[0_0_25px_rgba(220,38,38,0.5)]',
@@ -175,48 +119,48 @@ const getRankStyles = (rank: string): { ring: string; badge: string; glow: strin
     };
   }
   if (rankLower.includes('diamond')) {
-    return { 
-      ring: 'ring-4 ring-sky-500 ring-offset-2 ring-offset-background', 
+    return {
+      ring: 'ring-4 ring-sky-500 ring-offset-2 ring-offset-background',
       badge: 'bg-sky-500 text-white',
       glow: 'shadow-[0_0_25px_rgba(14,165,233,0.5)]',
       border: 'border-sky-500',
     };
   }
   if (rankLower.includes('platinum')) {
-    return { 
-      ring: 'ring-4 ring-cyan-200 ring-offset-2 ring-offset-background', 
+    return {
+      ring: 'ring-4 ring-cyan-200 ring-offset-2 ring-offset-background',
       badge: 'bg-cyan-200 text-cyan-900',
       glow: 'shadow-[0_0_20px_rgba(165,243,252,0.5)]',
       border: 'border-cyan-200',
     };
   }
   if (rankLower.includes('gold')) {
-    return { 
-      ring: 'ring-4 ring-yellow-500 ring-offset-2 ring-offset-background', 
+    return {
+      ring: 'ring-4 ring-yellow-500 ring-offset-2 ring-offset-background',
       badge: 'bg-yellow-500 text-yellow-950',
       glow: 'shadow-[0_0_20px_rgba(234,179,8,0.5)]',
       border: 'border-yellow-500',
     };
   }
   if (rankLower.includes('silver')) {
-    return { 
-      ring: 'ring-3 ring-slate-300', 
+    return {
+      ring: 'ring-3 ring-slate-300',
       badge: 'bg-slate-300 text-slate-800',
       glow: 'shadow-[0_0_15px_rgba(203,213,225,0.4)]',
       border: 'border-slate-300',
     };
   }
   if (rankLower.includes('bronze')) {
-    return { 
-      ring: 'ring-3 ring-amber-700', 
+    return {
+      ring: 'ring-3 ring-amber-700',
       badge: 'bg-amber-700 text-white',
       glow: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
       border: 'border-amber-700',
     };
   }
   // Associate / default
-  return { 
-    ring: 'ring-3 ring-emerald-500', 
+  return {
+    ring: 'ring-3 ring-emerald-500',
     badge: 'bg-emerald-500 text-white',
     glow: 'shadow-[0_0_12px_rgba(16,185,129,0.2)]',
     border: 'border-emerald-500',
@@ -234,13 +178,13 @@ export const EmptyD3Node = () => (
 );
 
 // Custom Hover Tooltip (works inside SVG foreignObject)
-const HoverTooltip = ({ 
-  data, 
-  name, 
-  isVisible 
-}: { 
-  data: D3TreeNodeDatum['attributes']; 
-  name: string; 
+const HoverTooltip = ({
+  data,
+  name,
+  isVisible
+}: {
+  data: D3TreeNodeDatum['attributes'];
+  name: string;
   isVisible: boolean;
 }) => {
   const { ring, badge } = getRankStyles(data.rank);
@@ -255,12 +199,12 @@ const HoverTooltip = ({
   const isStar = data.isStar ?? false;
 
   // Format joining date
-  const formattedJoiningDate = data.joiningDate 
-    ? new Date(data.joiningDate).toLocaleDateString('en-GB', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric' 
-      })
+  const formattedJoiningDate = data.joiningDate
+    ? new Date(data.joiningDate).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
     : null;
 
   // Get sponsor display value
@@ -269,7 +213,7 @@ const HoverTooltip = ({
   if (!isVisible) return null;
 
   return (
-    <div 
+    <div
       className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-200"
       style={{ minWidth: '260px' }}
     >
@@ -277,11 +221,11 @@ const HoverTooltip = ({
         {/* Section A: Identity Header */}
         <div className="bg-gradient-to-r from-primary/10 to-transparent p-3 border-b border-border/50 relative">
           {/* Status Badge - Top Right */}
-          <Badge 
+          <Badge
             className={cn(
               'absolute top-2 right-2 text-[9px] px-1.5 py-0.5',
-              isActive 
-                ? 'bg-chart-2/20 text-chart-2 border-chart-2/30' 
+              isActive
+                ? 'bg-chart-2/20 text-chart-2 border-chart-2/30'
                 : 'bg-destructive/20 text-destructive border-destructive/30'
             )}
             variant="outline"
@@ -289,7 +233,7 @@ const HoverTooltip = ({
             {isActive ? 'Active' : 'Inactive'}
           </Badge>
           {isStar && (
-            <Badge 
+            <Badge
               className="absolute top-2 right-16 text-[9px] px-1.5 py-0.5 bg-yellow-400/20 text-yellow-600 border-yellow-500/30"
               variant="outline"
             >
@@ -317,12 +261,12 @@ const HoverTooltip = ({
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Sponsor</span>
             <span className="font-mono font-semibold text-primary truncate text-[10px]">{sponsorDisplay}</span>
           </div>
-          
+
           <div className="flex flex-col gap-0.5 p-2 bg-muted/30 rounded-lg">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Joined</span>
             <span className="font-medium text-foreground text-[10px]">{formattedJoiningDate || 'N/A'}</span>
           </div>
-          
+
           <div className="flex flex-col gap-0.5 p-2 bg-muted/30 rounded-lg">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Rank</span>
             <Badge className={cn('text-[9px] w-fit', badge)}>{data.rank || 'N/A'}</Badge>
@@ -337,7 +281,7 @@ const HoverTooltip = ({
               Total Business
             </span>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-3">
             {/* Left Leg Stats */}
             <div className="p-2 bg-background/60 rounded-lg border border-border/30 space-y-2">
@@ -348,7 +292,7 @@ const HoverTooltip = ({
                   <Users className="w-3 h-3" /> {data.leftTeamCount ?? 0}
                 </span>
               </div>
-              
+
               {/* Row 1: Member Status (Active/Inactive) */}
               <div className="flex justify-center gap-3 py-1 border-b border-border/20">
                 <div className="flex items-center gap-1">
@@ -360,13 +304,19 @@ const HoverTooltip = ({
                   <span className="text-xs font-bold text-destructive">{data.leftCompleteInactive ?? 0}</span>
                 </div>
               </div>
-              
+
               {/* Row 2: Business Volume (BV) */}
-              <div className="flex items-center justify-center gap-1.5 py-1 bg-chart-1/10 rounded">
-                <TrendingUp className="h-3 w-3 text-chart-1" />
-                <span className="text-[10px] font-bold text-chart-1">{(data.leftLegBV ?? 0).toLocaleString()} BV</span>
+              <div className="flex flex-col gap-1 py-1.5 px-2 bg-chart-1/10 rounded">
+                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
+                  <span>THIS MONTH</span>
+                  <span className="font-bold text-chart-1 text-[10px]">{(data.thisMonthLeftLegBV ?? 0).toLocaleString()} BV</span>
+                </div>
+                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
+                  <span>LIFETIME</span>
+                  <span className="font-bold text-chart-1 text-[10px]">{(data.leftLegBV ?? 0).toLocaleString()} BV</span>
+                </div>
               </div>
-              
+
               {/* Row 3: Stars */}
               <div className="flex items-center justify-center gap-1.5 py-1 bg-chart-2/10 rounded">
                 <StarIcon className="h-3 w-3 text-chart-2 fill-chart-2" />
@@ -383,7 +333,7 @@ const HoverTooltip = ({
                   <Users className="w-3 h-3" /> {data.rightTeamCount ?? 0}
                 </span>
               </div>
-              
+
               {/* Row 1: Member Status (Active/Inactive) */}
               <div className="flex justify-center gap-3 py-1 border-b border-border/20">
                 <div className="flex items-center gap-1">
@@ -395,13 +345,19 @@ const HoverTooltip = ({
                   <span className="text-xs font-bold text-destructive">{data.rightCompleteInactive ?? 0}</span>
                 </div>
               </div>
-              
+
               {/* Row 2: Business Volume (BV) */}
-              <div className="flex items-center justify-center gap-1.5 py-1 bg-chart-1/10 rounded">
-                <TrendingUp className="h-3 w-3 text-chart-1" />
-                <span className="text-[10px] font-bold text-chart-1">{(data.rightLegBV ?? 0).toLocaleString()} BV</span>
+              <div className="flex flex-col gap-1 py-1.5 px-2 bg-chart-1/10 rounded">
+                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
+                  <span>THIS MONTH</span>
+                  <span className="font-bold text-chart-1 text-[10px]">{(data.thisMonthRightLegBV ?? 0).toLocaleString()} BV</span>
+                </div>
+                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
+                  <span>LIFETIME</span>
+                  <span className="font-bold text-chart-1 text-[10px]">{(data.rightLegBV ?? 0).toLocaleString()} BV</span>
+                </div>
               </div>
-              
+
               {/* Row 3: Stars */}
               <div className="flex items-center justify-center gap-1.5 py-1 bg-chart-2/10 rounded">
                 <StarIcon className="h-3 w-3 text-chart-2 fill-chart-2" />
@@ -444,7 +400,7 @@ export const ActiveD3Node = ({ data, name, onNodeClick, hasChildren, isHighlight
     .toUpperCase();
 
   const avatarUrl = data.profileImage || data.avatar;
-  
+
   // Determine active/inactive status
   const isActive = data.isActive ?? (data.status?.toLowerCase() === 'active');
   const isStar = data.isStar ?? false;
@@ -452,18 +408,18 @@ export const ActiveD3Node = ({ data, name, onNodeClick, hasChildren, isHighlight
   // Priority: Inactive = red override, Active = rank-based styling
   const avatarStyles = !isActive
     ? {
-        border: 'border-destructive',
-        ring: 'ring-2 ring-destructive/70',
-        shadow: 'shadow-[0_0_25px_rgba(239,68,68,0.9)]',
-      }
+      border: 'border-destructive',
+      ring: 'ring-2 ring-destructive/70',
+      shadow: 'shadow-[0_0_25px_rgba(239,68,68,0.9)]',
+    }
     : {
-        border: rankStyle.border,
-        ring: rankStyle.ring,
-        shadow: rankStyle.glow,
-      };
+      border: rankStyle.border,
+      ring: rankStyle.ring,
+      shadow: rankStyle.glow,
+    };
 
   return (
-    <div 
+    <div
       className="relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -472,36 +428,36 @@ export const ActiveD3Node = ({ data, name, onNodeClick, hasChildren, isHighlight
         onClick={() => onNodeClick?.(data.memberId)}
         className={cn(
           'flex flex-col items-center cursor-pointer group transition-all duration-300',
-          isHighlighted 
-            ? 'scale-110 z-50' 
+          isHighlighted
+            ? 'scale-110 z-50'
             : 'hover:scale-105'
         )}
       >
         {/* Highlight glow effect for search */}
         {isHighlighted && (
-          <div 
+          <div
             className="absolute -inset-3 rounded-2xl animate-pulse pointer-events-none"
-            style={{ 
+            style={{
               background: 'linear-gradient(135deg, rgba(250,204,21,0.4), rgba(234,179,8,0.3))',
               boxShadow: '0 0 30px rgba(250,204,21,0.6), 0 0 60px rgba(250,204,21,0.3)',
               zIndex: -1
-            }} 
+            }}
           />
         )}
-        
+
         {/* Avatar with rank-based styling */}
         <div className="relative transition-shadow duration-300">
           <Avatar
             className={cn(
               'w-16 h-16 border-4 transition-all duration-300 bg-background',
-              isHighlighted 
-                ? 'border-yellow-400 ring-4 ring-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.9)]' 
+              isHighlighted
+                ? 'border-yellow-400 ring-4 ring-yellow-400 shadow-[0_0_30px_rgba(250,204,21,0.9)]'
                 : cn(
-                    avatarStyles.border,
-                    avatarStyles.ring,
-                    avatarStyles.shadow,
-                    'group-hover:scale-105'
-                  )
+                  avatarStyles.border,
+                  avatarStyles.ring,
+                  avatarStyles.shadow,
+                  'group-hover:scale-105'
+                )
             )}
           >
             <AvatarImage src={avatarUrl} alt={data.fullName} className="object-cover" />
@@ -518,7 +474,7 @@ export const ActiveD3Node = ({ data, name, onNodeClick, hasChildren, isHighlight
               </div>
             </div>
           )}
-          
+
           {/* Drill-down indicator */}
           {hasChildren && (
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-background border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -534,12 +490,12 @@ export const ActiveD3Node = ({ data, name, onNodeClick, hasChildren, isHighlight
               {name.split(' ')[0]}
             </p>
           </div>
-          
+
           {/* Member ID */}
           <p className="mt-1 text-[9px] font-bold text-muted-foreground bg-background/80 px-2 py-0.5 rounded-full">
             {data.memberId}
           </p>
-          
+
           {/* Rank Badge */}
           <Badge
             variant="outline"

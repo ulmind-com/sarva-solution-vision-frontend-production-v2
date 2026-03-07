@@ -1,0 +1,1 @@
+const cp = require('child_process'); const fs = require('fs'); const out = cp.execSync('git --git-dir="E:/Projects-New/Sarva Solution Vision Proj/sarvasolution_backend/.git" --work-tree="E:/Projects-New/Sarva Solution Vision Proj/sarvasolution_backend" log -p -1 HEAD').toString(); fs.writeFileSync('diff.json', JSON.stringify({ diff: out }));
