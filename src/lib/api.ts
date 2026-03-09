@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://sarvasolution-backend.onrender.com/';
+const API_BASE_URL = 'https://sarvasolution-backend.onrender.com';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

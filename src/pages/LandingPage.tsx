@@ -5,16 +5,16 @@ import { motion } from 'framer-motion';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import {
-  Sprout, 
-  Fish, 
-  Smile, 
-  HeartPulse, 
-  Home, 
+  Sprout,
+  Fish,
+  Smile,
+  HeartPulse,
+  Home,
   Gem,
-  ArrowRight, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
+  ArrowRight,
+  Facebook,
+  Twitter,
+  Instagram,
   Linkedin,
   BookOpen,
   Award,
@@ -75,14 +75,14 @@ const LandingPage = () => {
       <nav className="sticky top-0 z-50 glass border-b border-border/50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img 
-              src="https://res.cloudinary.com/dkgwi1xvx/image/upload/v1769630007/sdfsdf_q4ziyu.png" 
-              alt="Sarva Solution Vision Logo" 
+            <img
+              src="https://res.cloudinary.com/dkgwi1xvx/image/upload/v1769630007/sdfsdf_q4ziyu.png"
+              alt="Sarva Solution Vision Logo"
               className="h-12 w-auto"
             />
             <span className="text-xl font-bold text-foreground hidden sm:block">Sarva Solution Vision</span>
           </Link>
-          
+
           <div className="hidden md:flex items-center gap-8">
             <button onClick={() => scrollToSection('home')} className="text-muted-foreground hover:text-foreground transition-colors">Home</button>
             <button onClick={() => scrollToSection('about-future')} className="text-muted-foreground hover:text-foreground transition-colors">About</button>
@@ -90,7 +90,7 @@ const LandingPage = () => {
             <button onClick={() => scrollToSection('banking')} className="text-muted-foreground hover:text-foreground transition-colors">Bank Details</button>
             <button onClick={() => scrollToSection('contact')} className="text-muted-foreground hover:text-foreground transition-colors">Contact</button>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Link to="/login">
@@ -105,15 +105,15 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section id="home" className="relative overflow-hidden min-h-[90vh] flex items-center">
         <div className="absolute inset-0 bg-gradient-to-br from-green-900/90 via-green-800/80 to-emerald-700/70" />
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920)' }}
         />
         <div className="absolute top-20 right-10 w-72 h-72 bg-green-400/20 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-10 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl" />
-        
+
         <div className="container mx-auto px-6 py-24 md:py-32 relative z-10">
-          <motion.div 
+          <motion.div
             className="max-w-4xl mx-auto text-center"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -132,9 +132,9 @@ const LandingPage = () => {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Link to="/login">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
+                <Button
+                  size="lg"
+                  variant="outline"
                   className="font-semibold px-8 py-6 text-lg bg-background/90 text-foreground border border-border hover:bg-background"
                 >
                   Join Our Vision
@@ -148,7 +148,7 @@ const LandingPage = () => {
       {/* About Our Future Section */}
       <section id="about-future" className="py-20 md:py-28 bg-muted/30">
         <div className="container mx-auto px-6">
-          <motion.div 
+          <motion.div
             className="grid md:grid-cols-2 gap-12 items-center"
             initial="initial"
             whileInView="animate"
@@ -168,9 +168,9 @@ const LandingPage = () => {
             </motion.div>
             <motion.div variants={fadeInUp} className="relative">
               <div className="bg-gradient-to-br from-green-100 to-amber-50 rounded-2xl p-4 shadow-lg">
-                <img 
-                  src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800" 
-                  alt="Nature and Agriculture" 
+                <img
+                  src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800"
+                  alt="Nature and Agriculture"
                   className="rounded-xl w-full h-80 object-cover"
                 />
               </div>
@@ -186,7 +186,7 @@ const LandingPage = () => {
       {/* Product Segments Section */}
       <section id="segments" className="py-20 md:py-28">
         <div className="container mx-auto px-6">
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -199,8 +199,8 @@ const LandingPage = () => {
               Discover our diverse range of premium products designed for holistic well-being.
             </p>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6"
             variants={staggerContainer}
             initial="initial"
@@ -231,7 +231,7 @@ const LandingPage = () => {
       {/* About Us - Vision/Mission Section */}
       <section className="py-20 md:py-28 bg-gradient-to-br from-green-50 to-amber-50 dark:from-green-950/20 dark:to-amber-950/20">
         <div className="container mx-auto px-6">
-          <motion.div 
+          <motion.div
             className="max-w-4xl mx-auto text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -253,7 +253,7 @@ const LandingPage = () => {
       {/* Why Choose Us Section */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-6">
-          <motion.div 
+          <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -266,8 +266,8 @@ const LandingPage = () => {
               Join a network that values integrity, growth, and sustainability.
             </p>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
             variants={staggerContainer}
             initial="initial"
@@ -298,7 +298,7 @@ const LandingPage = () => {
       {/* Banking Details Section */}
       <section id="banking" className="py-20 md:py-28 bg-muted/30">
         <div className="container mx-auto px-6">
-          <motion.div 
+          <motion.div
             className="max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -371,7 +371,7 @@ const LandingPage = () => {
       {/* Contact Section */}
       <section id="contact" className="py-16 bg-slate-900">
         <div className="container mx-auto px-6">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -387,7 +387,7 @@ const LandingPage = () => {
 
           <div className="grid md:grid-cols-3 gap-8 md:divide-x divide-slate-700">
             {/* Head Office */}
-            <motion.div 
+            <motion.div
               className="text-center md:text-left md:pr-8"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -408,7 +408,7 @@ const LandingPage = () => {
             </motion.div>
 
             {/* Corporate Office */}
-            <motion.div 
+            <motion.div
               className="text-center md:text-left md:px-8"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -429,7 +429,7 @@ const LandingPage = () => {
             </motion.div>
 
             {/* Contact Info */}
-            <motion.div 
+            <motion.div
               className="text-center md:text-left md:pl-8"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -463,14 +463,14 @@ const LandingPage = () => {
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-8 items-center mb-8">
             <div className="flex items-center justify-center md:justify-start gap-3">
-              <img 
-                src="https://res.cloudinary.com/dkgwi1xvx/image/upload/v1769630007/sdfsdf_q4ziyu.png" 
-                alt="Sarva Solution Vision Logo" 
+              <img
+                src="https://res.cloudinary.com/dkgwi1xvx/image/upload/v1769630007/sdfsdf_q4ziyu.png"
+                alt="Sarva Solution Vision Logo"
                 className="h-12 w-auto"
               />
               <span className="text-white font-semibold hidden sm:block">Sarva Solution Vision</span>
             </div>
-            
+
             <div className="flex justify-center gap-4">
               <a href="https://www.facebook.com/share/187rjGnTre/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-teal-600 transition-colors">
                 <Facebook className="h-5 w-5 text-white" />
@@ -491,13 +491,13 @@ const LandingPage = () => {
               <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">Terms of Service</a>
             </div>
           </div>
-          
+
           <div className="border-t border-slate-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-2">
             <p className="text-slate-400 text-sm">
               © 2026 Sarva Solution Vision Pvt. Ltd. All rights reserved.
             </p>
             <p className="text-slate-400 text-sm">
-              Developed by <a href="https://www.ulmind.com" target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-500 hover:text-emerald-400 hover:underline">ULMind</a>
+              Developed by <a href="https://www.ulmind.com" target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-500 hover:text-emerald-400 hover:underline">ULMiND</a>
             </p>
           </div>
         </div>

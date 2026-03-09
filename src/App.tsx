@@ -37,6 +37,7 @@ import ProductCatalog from "./pages/user/ProductCatalog";
 import AdminLayout from "./components/layout/AdminLayout";
 import AdminHome from "./pages/admin/AdminHome";
 import UserManagement from "./pages/admin/UserManagement";
+import UserWalletList from "./pages/admin/UserWalletList";
 import UserDetail from "./pages/admin/UserDetail";
 import PayoutRequests from "./pages/admin/PayoutRequests";
 
@@ -214,6 +215,13 @@ const AppRoutes = () => {
         <ProtectedRoute requireAdmin>
           <AdminLayout>
             <UserManagement />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/user-wallets" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <UserWalletList />
           </AdminLayout>
         </ProtectedRoute>
       } />

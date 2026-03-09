@@ -226,7 +226,7 @@ const KYCDetailsTab = () => {
             <img
               src={fileState.preview || existingUrl}
               alt={label}
-              className="w-full h-40 object-cover"
+              className="w-full h-40 object-contain bg-muted/50"
             />
             {!disabled && (
               <button
@@ -375,7 +375,7 @@ const KYCDetailsTab = () => {
           onFileSelect={(e) => handleFileSelect(e, setAadhaarFront)}
           onClear={() => clearFile(setAadhaarFront)}
           inputRef={aadhaarFrontRef}
-          existingUrl={user?.kyc?.aadhaarFront?.url}
+          existingUrl={kycStatus === 'rejected' ? undefined : user?.kyc?.aadhaarFront?.url}
           disabled={isLocked}
         />
         <FileUploadZone
@@ -384,7 +384,7 @@ const KYCDetailsTab = () => {
           onFileSelect={(e) => handleFileSelect(e, setAadhaarBack)}
           onClear={() => clearFile(setAadhaarBack)}
           inputRef={aadhaarBackRef}
-          existingUrl={user?.kyc?.aadhaarBack?.url}
+          existingUrl={kycStatus === 'rejected' ? undefined : user?.kyc?.aadhaarBack?.url}
           disabled={isLocked}
         />
       </div>
@@ -396,7 +396,7 @@ const KYCDetailsTab = () => {
           onFileSelect={(e) => handleFileSelect(e, setPanImage)}
           onClear={() => clearFile(setPanImage)}
           inputRef={panImageRef}
-          existingUrl={user?.kyc?.panImage?.url}
+          existingUrl={kycStatus === 'rejected' ? undefined : user?.kyc?.panImage?.url}
           disabled={isLocked}
         />
       </div>

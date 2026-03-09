@@ -37,7 +37,8 @@ import {
   Warehouse,
   AlertTriangle,
   LayoutDashboard,
-  Gift
+  Gift,
+  Wallet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -61,8 +62,9 @@ interface MenuSection {
 }
 
 const simpleMenuItems: MenuItem[] = [
-  { path: '/admin', label: 'Dashboard', icon: Home },
+  { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/users', label: 'User Management', icon: Users },
+  { path: '/admin/user-wallets', label: 'User Wallets', icon: Wallet },
   { path: '/admin/payouts', label: 'Payout Requests', icon: CreditCard },
   { path: '/admin/profile', label: 'My Profile', icon: UserCog },
 ];

@@ -83,6 +83,7 @@ interface UserDetailData {
     availableBalance: number;
     totalEarnings: number;
     withdrawnAmount: number;
+    pendingWithdrawal: number;
   };
   bikeFund: { totalBVContributed: number; nextTargetBV: number };
   carFund: { totalBVContributed: number; nextTargetBV: number };
@@ -463,7 +464,7 @@ const UserDetail = () => {
 
         {/* Tab 1: Overview & Network */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-3">
             {/* Personal Info */}
             <Card>
               <CardHeader>
@@ -506,6 +507,31 @@ const UserDetail = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Joining Package</span>
                   <span className="font-medium text-foreground">{formatCurrency(user.joiningPackage)}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Wallet Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Wallet Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Available Balance</span>
+                  <span className="font-bold text-green-600 text-lg">{formatCurrency(user.wallet?.availableBalance || 0)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Total Earnings</span>
+                  <span className="font-medium text-foreground">{formatCurrency(user.wallet?.totalEarnings || 0)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Withdrawn Amount</span>
+                  <span className="font-medium text-foreground">{formatCurrency(user.wallet?.withdrawnAmount || 0)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t">
+                  <span className="text-muted-foreground">Pending Withdraw</span>
+                  <span className="font-medium text-yellow-600">{formatCurrency(user.wallet?.pendingWithdrawal || 0)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -626,7 +652,7 @@ const UserDetail = () => {
                           <img
                             src={user.kyc.aadhaarFront.url}
                             alt="Bank PassBook 1st Page"
-                            className="w-full h-32 object-cover rounded-md"
+                            className="w-full h-32 object-contain bg-muted/50 border rounded-md"
                           />
                           <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
                             <ZoomIn className="h-6 w-6 text-background" />
@@ -637,7 +663,7 @@ const UserDetail = () => {
                         <img
                           src={user.kyc.aadhaarFront.url}
                           alt="Bank PassBook 1st Page"
-                          className="w-full h-auto"
+                          className="w-full max-h-[80vh] object-contain rounded-md"
                         />
                       </DialogContent>
                     </Dialog>
@@ -657,7 +683,7 @@ const UserDetail = () => {
                           <img
                             src={user.kyc.aadhaarBack.url}
                             alt="Aadhaar Back"
-                            className="w-full h-32 object-cover rounded-md"
+                            className="w-full h-32 object-contain bg-muted/50 border rounded-md"
                           />
                           <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
                             <ZoomIn className="h-6 w-6 text-background" />
@@ -668,7 +694,7 @@ const UserDetail = () => {
                         <img
                           src={user.kyc.aadhaarBack.url}
                           alt="Aadhaar Back"
-                          className="w-full h-auto"
+                          className="w-full max-h-[80vh] object-contain rounded-md"
                         />
                       </DialogContent>
                     </Dialog>
@@ -688,7 +714,7 @@ const UserDetail = () => {
                           <img
                             src={user.kyc.panImage.url}
                             alt="PAN Card"
-                            className="w-full h-32 object-cover rounded-md"
+                            className="w-full h-32 object-contain bg-muted/50 border rounded-md"
                           />
                           <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
                             <ZoomIn className="h-6 w-6 text-background" />
@@ -699,7 +725,7 @@ const UserDetail = () => {
                         <img
                           src={user.kyc.panImage.url}
                           alt="PAN Card"
-                          className="w-full h-auto"
+                          className="w-full max-h-[80vh] object-contain rounded-md"
                         />
                       </DialogContent>
                     </Dialog>

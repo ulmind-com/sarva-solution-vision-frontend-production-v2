@@ -50,27 +50,63 @@ const fmt = (n: number | undefined | null): string =>
 // Function is now async to allow fetching product details
 export const generateAdminInvoicePDF = async (invoice: AdminInvoice) => {
 
-  // ── Fetch Product Names before generating PDF ──
+  // ── Preload Watermark Logo & Aspect Ratio ──
+  let logoBase64 = '';
+  let logoRatio = 1;
+  try {
+    const res = await fetch('/logo.png');
+    const blob = await res.blob();
+    logoBase64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        const img = new Image();
+        img.onload = () => {
+          logoRatio = img.width / img.height || 1;
+          resolve(dataUrl);
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    console.error('Could not load logo for watermark', e);
+  }
+
+  // ── Fetch Product Names & BV/PV before generating PDF ──
   const itemsWithNames = await Promise.all(
     invoice.items.map(async (item) => {
       let fetchedName = item.productName;
+      let fetchedBv = 0;
+      let fetchedPv = 0;
 
-      // If product is just an ID string and we don't have the name yet, fetch it
-      if (typeof item.product === 'string' && !fetchedName) {
+      // Extract existing bv/pv if passed as an object snapshot
+      if (typeof item.product === 'object' && item.product !== null) {
+        fetchedBv = (item.product as any).bv || 0;
+        fetchedPv = (item.product as any).pv || 0;
+      }
+
+      // If product is just an ID string or missing full details, fetch it
+      if (typeof item.product === 'string') {
         try {
           const res = await fetch(`https://sarvasolution-backend.onrender.com/api/v1/user/products/${item.product}`);
           const data = await res.json();
-          if (data.success && data.data?.product?.productName) {
-            fetchedName = data.data.product.productName;
+          if (data.success && data.data?.product) {
+            fetchedName = data.data.product.productName || fetchedName;
+            fetchedBv = data.data.product.bv || fetchedBv;
+            fetchedPv = data.data.product.pv || fetchedPv;
           }
         } catch (error) {
-          console.error("Failed to fetch product name for ID:", item.product, error);
+          console.error("Failed to fetch product details for ID:", item.product, error);
         }
       }
 
       return {
         ...item,
-        productName: fetchedName
+        productName: fetchedName,
+        productBv: fetchedBv,
+        productPv: fetchedPv
       };
     })
   );
@@ -89,7 +125,7 @@ export const generateAdminInvoicePDF = async (invoice: AdminInvoice) => {
   doc.rect(m, titleY, pw - 2 * m, 10);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('GST INVOICE', pw / 2, titleY + 7, { align: 'center' });
+  doc.text('TAX INVOICE', pw / 2, titleY + 7, { align: 'center' });
 
   // ── Header Info ──
   const hY = titleY + 10;
@@ -150,6 +186,9 @@ export const generateAdminInvoicePDF = async (invoice: AdminInvoice) => {
   // ── Items Table ──
   const tableStartY = pY + pH2 + 2;
 
+  let totalBV = 0;
+  let totalPV = 0;
+
   // Use itemsWithNames here instead of invoice.items
   const tableBody = itemsWithNames.map((item, i) => {
     const qty = item.quantity ?? 0;
@@ -160,6 +199,9 @@ export const generateAdminInvoicePDF = async (invoice: AdminInvoice) => {
     const sgstRate = item.sgstRate ?? 0;
     const cgstAmt = item.cgstAmount ?? (gross * cgstRate) / 100;
     const sgstAmt = item.sgstAmount ?? (gross * sgstRate) / 100;
+
+    totalBV += (item.productBv || 0) * qty;
+    totalPV += (item.productPv || 0) * qty;
 
     const productName = typeof item.product === 'object'
       ? item.product?.productName || 'Product'
@@ -208,6 +250,8 @@ export const generateAdminInvoicePDF = async (invoice: AdminInvoice) => {
   const grandTotal = invoice.grandTotal ?? invoice.totalAmount ?? 0;
 
   const summaryData: [string, string][] = [
+    ['Total BV:', fmt(totalBV)],
+    ['Total PV:', fmt(totalPV)],
     ['Gross Total:', fmt(grossTotal)],
     ['Total CGST:', fmt(totalCGST)],
     ['Total SGST:', fmt(totalSGST)],
@@ -239,6 +283,28 @@ export const generateAdminInvoicePDF = async (invoice: AdminInvoice) => {
   doc.setFontSize(8);
   doc.line(pw - m - 50, sigY + 12, pw - m, sigY + 12);
   doc.text('Authorised Signature', pw - m - 25, sigY + 16, { align: 'center' });
+
+  // ── Apply Watermark to All Pages ──
+  if (logoBase64) {
+    const totalPages = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      if (typeof doc.saveGraphicsState === 'function') {
+        doc.saveGraphicsState();
+        doc.setGState(new (doc as any).GState({ opacity: 0.08 }));
+        let imgW = 120;
+        let imgH = 120 / logoRatio;
+        if (imgH > 180) {
+          imgH = 180;
+          imgW = 180 * logoRatio;
+        }
+        const x = (doc.internal.pageSize.getWidth() - imgW) / 2;
+        const y = (doc.internal.pageSize.getHeight() - imgH) / 2;
+        doc.addImage(logoBase64, 'PNG', x, y, imgW, imgH);
+        doc.restoreGraphicsState();
+      }
+    }
+  }
 
   doc.save('Invoice_' + invNo + '.pdf');
 };
