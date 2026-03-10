@@ -90,7 +90,7 @@ export const generateAdminInvoicePDF = async (invoice: AdminInvoice) => {
       // If product is just an ID string or missing full details, fetch it
       if (typeof item.product === 'string') {
         try {
-          const res = await fetch(`http://localhost:8000/api/v1/user/products/${item.product}`);
+          const res = await fetch(`https://sarvasolution-backend.onrender.com/api/v1/user/products/${item.product}`);
           const data = await res.json();
           if (data.success && data.data?.product) {
             fetchedName = data.data.product.productName || fetchedName;
