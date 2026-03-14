@@ -113,16 +113,8 @@ export const getUserTree = async (memberId: string) => {
 };
 
 // Fetch repurchase bonus status
-export const getRepurchaseStatus = async () => {
-  const response = await api.get('/api/v1/user/bonus/repurchase-status');
-  return response.data;
-};
-
-// Fetch repurchase bonus history
-export const getRepurchaseHistory = async (page = 1, limit = 10) => {
-  const response = await api.get('/api/v1/user/bonus/repurchase-history', {
-    params: { page, limit }
-  });
+export const getSelfRepurchaseBonusStatus = async () => {
+  const response = await api.get('/api/v1/user/self-repurchase-bonus/status');
   return response.data;
 };
 

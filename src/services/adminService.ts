@@ -125,20 +125,27 @@ export const deleteFranchise = async (franchiseId: string) => {
 
 // ===== Bonus Management =====
 
-export const getRepurchasePools = async (page = 1, limit = 10) => {
-  const response = await api.get('/api/v1/admin/bonus/repurchase-pool', {
-    params: { page, limit }
-  });
+export const getSelfRepurchaseCompanyBv = async (month?: string) => {
+  const params: Record<string, unknown> = {};
+  if (month) params.month = month;
+  const response = await api.get('/api/v1/admin/self-repurchase-bonus/company-bv', { params });
   return response.data;
 };
 
-export const getPoolQualifiers = async (poolId: string) => {
-  const response = await api.get(`/api/v1/admin/bonus/repurchase-qualifiers/${poolId}`);
+export const getSelfRepurchaseDistribution = async (month?: string) => {
+  const params: Record<string, unknown> = {};
+  if (month) params.month = month;
+  const response = await api.get('/api/v1/admin/self-repurchase-bonus/distribution', { params });
+  return response.data;
+};
+
+export const triggerSelfRepurchaseDistribution = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/self-repurchase-bonus/trigger-distribution', { year, month });
   return response.data;
 };
 
 export const getGlobalRepurchaseHistory = async (page = 1, limit = 20, memberId?: string) => {
-  const params: Record<string, any> = { page, limit };
+  const params: Record<string, unknown> = { page, limit };
   if (memberId) params.memberId = memberId;
   const response = await api.get('/api/v1/admin/bonus/repurchase-history', { params });
   return response.data;
@@ -159,7 +166,7 @@ export const triggerRepurchaseDistribution = async () => {
 // ===== Beginner Matching Bonus Management =====
 
 export const getBeginnerBonusPreview = async (month?: number, year?: number) => {
-  const params: Record<string, any> = {};
+  const params: Record<string, unknown> = {};
   if (month) params.month = month;
   if (year) params.year = year;
   const response = await api.get('/api/v1/admin/bonus/beginner-matching/preview', { params });
@@ -167,7 +174,7 @@ export const getBeginnerBonusPreview = async (month?: number, year?: number) => 
 };
 
 export const distributeBeginnerBonus = async (month?: number, year?: number) => {
-  const data: Record<string, any> = {};
+  const data: Record<string, unknown> = {};
   if (month) data.month = month;
   if (year) data.year = year;
   const response = await api.post('/api/v1/admin/bonus/beginner-matching/distribute', data);

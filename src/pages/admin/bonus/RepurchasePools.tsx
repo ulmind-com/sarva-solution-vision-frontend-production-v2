@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { Copy, Plus, AlertCircle } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { Plus, AlertCircle, Building, Users, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +12,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { getRepurchasePools, triggerRepurchaseDistribution } from "@/services/adminService";
+import { getSelfRepurchaseCompanyBv, getSelfRepurchaseDistribution, triggerSelfRepurchaseDistribution } from "@/services/adminService";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -27,32 +34,61 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function RepurchasePools() {
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [triggering, setTriggering] = useState(false);
-    const [poolsData, setPoolsData] = useState<any[]>([]);
-    const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+    
+    // Default to current local month
+    const currentDate = new Date();
+    const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth() + 1); // 1-12
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [companyBvData, setCompanyBvData] = useState<any>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [distributionData, setDistributionData] = useState<any>(null);
+
     const { toast } = useToast();
 
-    useEffect(() => {
-        fetchData(1);
-    }, []);
+    // Generate last 12 months for select
+    const monthOptions = Array.from({ length: 12 }).map((_, i) => {
+        const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        return {
+            value: `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`,
+            label: format(d, 'MMMM yyyy'),
+            year: d.getFullYear(),
+            month: d.getMonth() + 1
+        };
+    });
 
-    const fetchData = async (page: number) => {
+    useEffect(() => {
+        fetchData();
+    }, [selectedYear, selectedMonth]);
+
+    const fetchData = async () => {
         setLoading(true);
+        const monthStr = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
+        
         try {
-            const res = await getRepurchasePools(page, 10);
-            if (res.success) {
-                const poolArray = res.data?.pools || res.data?.docs || [];
-                setPoolsData(poolArray);
-                if (res.data?.pagination) {
-                    setPagination({
-                        page: res.data.pagination.currentPage || page,
-                        totalPages: res.data.pagination.totalPages || 1
-                    });
-                }
+            const [bvRes, distRes] = await Promise.all([
+                getSelfRepurchaseCompanyBv(monthStr).catch(() => ({ success: false, data: null })),
+                getSelfRepurchaseDistribution(monthStr).catch(() => ({ success: false, data: null }))
+            ]);
+
+            if (bvRes.success) {
+                setCompanyBvData(bvRes.data);
+            } else {
+                setCompanyBvData(null);
+            }
+
+            if (distRes.success) {
+                setDistributionData(distRes.data);
+            } else {
+                setDistributionData(null);
             }
         } catch (error) {
-            console.error("Failed to fetch Repurchase Pools data:", error);
+            console.error("Failed to fetch Repurchase Bonus context:", error);
+            setCompanyBvData(null);
+            setDistributionData(null);
         } finally {
             setLoading(false);
         }
@@ -61,18 +97,18 @@ export default function RepurchasePools() {
     const handleTriggerDistribution = async () => {
         setTriggering(true);
         try {
-            const res = await triggerRepurchaseDistribution();
+            const res = await triggerSelfRepurchaseDistribution(selectedYear, selectedMonth);
             if (res.success) {
                 toast({
                     title: "Distribution Triggered Successfully",
                     description: res.message || "The repurchase bonus has been distributed.",
                     variant: "default",
                 });
-                fetchData(1); // Refresh pools
+                fetchData(); // Refresh current month view
             } else {
                 toast({
                     title: "Distribution Failed",
-                    description: res.message || "Failed to trigger distribution. Maybe it was already processed for this month.",
+                    description: res.message || "Failed to trigger distribution.",
                     variant: "destructive",
                 });
             }
@@ -92,132 +128,199 @@ export default function RepurchasePools() {
         }
     };
 
+    const pool = distributionData?.pool;
+    const credits = distributionData?.credits || [];
+
     return (
-        <div className="space-y-6">
-            {/* Header */}
+        <div className="space-y-6 max-w-7xl mx-auto pb-8">
+            {/* Header & Controls */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-lg glass premium-shadow border-primary/10">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Repurchase Bonus Pools</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Manage company-wide repurchase pools and trigger manual distributions
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Self Repurchase Bonus</h1>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                        View monthly company BV metrics and manage pool distributions
                     </p>
                 </div>
 
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button disabled={triggering} className="shadow-glow-primary">
-                            {triggering ? (
-                                <>
-                                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"></div>
-                                    Processing...
-                                </>
-                            ) : (
-                                <>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Trigger Distribution
-                                </>
-                            )}
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="glass">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Trigger Repurchase Distribution?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action will calculate the total company repurchase BV for the previous month and distribute 7% of it among all eligible users (500+ BV). This action cannot be undone. Are you sure you want to proceed?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleTriggerDistribution} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                                Yes, Distribute Now
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                    <Select 
+                        value={`${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`}
+                        onValueChange={(val) => {
+                            const opt = monthOptions.find(o => o.value === val);
+                            if (opt) {
+                                setSelectedYear(opt.year);
+                                setSelectedMonth(opt.month);
+                            }
+                        }}
+                    >
+                        <SelectTrigger className="w-[180px] bg-background">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            <SelectValue placeholder="Select Month" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {monthOptions.map(opt => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button disabled={triggering} className="shadow-glow-primary min-w-[180px]">
+                                {triggering ? (
+                                    <>
+                                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"></div>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Trigger {format(new Date(selectedYear, selectedMonth - 1), 'MMM')} Distribution
+                                    </>
+                                )}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="glass">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Trigger Distribution for {format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy')}?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action will distribute 7% of the company's total BV ({companyBvData?.companyTotalBV || 0} BV) among all eligible users. This action cannot be undone. Are you sure you want to proceed?
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleTriggerDistribution} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                                    Yes, Distribute Now
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
             </div>
 
-            {/* History Table */}
-            <Card className="glass premium-shadow overflow-hidden">
-                <CardHeader className="border-b border-border/50 bg-muted/20">
-                    <CardTitle>Pool History</CardTitle>
-                    <CardDescription>A record of all monthly pools created and processed.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto min-h-[400px]">
-                        {loading ? (
-                            <div className="flex items-center justify-center p-12">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-muted/50">
-                                        <TableHead>Month</TableHead>
-                                        <TableHead>Total Company BV</TableHead>
-                                        <TableHead>7% Distribution Pool (₹)</TableHead>
-                                        <TableHead>Eligible Qualifiers</TableHead>
-                                        <TableHead>Bonus Per Qualifier (₹)</TableHead>
-                                        <TableHead>Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {poolsData.length > 0 ? (
-                                        poolsData.map((pool) => (
-                                            <TableRow key={pool._id} className="hover:bg-accent/40 transition-colors">
-                                                <TableCell className="font-medium whitespace-nowrap">
-                                                    {pool.monthYear || pool.month}
-                                                </TableCell>
-                                                <TableCell>{pool.totalCompanyBV?.toLocaleString() || '0'} BV</TableCell>
-                                                <TableCell className="text-primary font-medium">₹{pool.poolAmount?.toLocaleString('en-IN') || '0'}</TableCell>
-                                                <TableCell>{pool.totalQualifiers || '0'} Users</TableCell>
-                                                <TableCell className="font-semibold text-green-600">₹{pool.amountPerQualifier?.toLocaleString('en-IN') || '0'}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={pool.status === 'distributed' ? 'default' : 'secondary'} className={pool.status === 'distributed' ? 'bg-green-500 hover:bg-green-600' : ''}>
-                                                        {pool.status ? pool.status.toUpperCase() : 'UNKNOWN'}
-                                                    </Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                                                No pool history found. Distributions may not have been triggered yet.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        )}
+            {loading ? (
+                <div className="flex items-center justify-center p-12 min-h-[400px]">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            ) : (
+                <>
+                    {/* Metrics Grid */}
+                    <div className="grid gap-4 md:grid-cols-3">
+                        {/* Company BV Card */}
+                        <Card className="glass">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                    Total Company BV
+                                </CardTitle>
+                                <Building className="h-4 w-4 text-primary" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{companyBvData?.companyTotalBV?.toLocaleString() || 0} BV</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    From {companyBvData?.totalTransactions || 0} repurchase transactions
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Projected Pool */}
+                        <Card className="glass">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                    Total 7% Pool Amount
+                                </CardTitle>
+                                <div className="h-4 w-4 text-primary rounded-full bg-primary/10 flex items-center justify-center font-bold text-[10px]">₹</div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-primary">₹{(companyBvData?.projectedPool || pool?.poolAmount || 0).toLocaleString('en-IN')}</div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Distributed to eligible qualifiers
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Status/Qualifiers */}
+                        <Card className="glass border-primary/20 bg-primary/5">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Total Qualifiers
+                                </CardTitle>
+                                <Users className="h-4 w-4 text-primary" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-primary">{pool?.eligibleUserCount || pool?.totalQualifiers || credits.length || 0}</div>
+                                <div className="mt-1 flex items-center">
+                                    <span className="text-xs mr-2">Status:</span>
+                                    <Badge variant={pool?.status === 'distributed' ? 'default' : 'secondary'} className={`text-[10px] h-4 px-1 py-0 ${pool?.status === 'distributed' ? 'bg-green-500 hover:bg-green-600' : ''}`}>
+                                        {pool?.status ? pool?.status.toUpperCase() : 'PENDING'}
+                                    </Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
 
-                    {/* Pagination */}
-                    {!loading && pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-between px-4 py-3 border-t">
-                            <div className="text-sm text-muted-foreground">
-                                Page {pagination.page} of {pagination.totalPages}
+                    {/* Credits Table */}
+                    <Card className="glass premium-shadow overflow-hidden">
+                        <CardHeader className="border-b border-border/50 bg-muted/20">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <CardTitle>Distribution Details</CardTitle>
+                                    <CardDescription>Per-user breakdown for {format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy')}</CardDescription>
+                                </div>
+                                {pool?.status === 'distributed' && (
+                                    <div className="text-right">
+                                        <div className="text-sm font-semibold text-primary">₹{pool?.netSharePerUser?.toLocaleString('en-IN') || 0}</div>
+                                        <div className="text-xs text-muted-foreground">Net Per User</div>
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={pagination.page <= 1}
-                                    onClick={() => fetchData(pagination.page - 1)}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={pagination.page >= pagination.totalPages}
-                                    onClick={() => fetchData(pagination.page + 1)}
-                                >
-                                    Next
-                                </Button>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-muted/50">
+                                            <TableHead>Member ID</TableHead>
+                                            <TableHead className="text-right">Gross Share</TableHead>
+                                            <TableHead className="text-right">Admin (5%)</TableHead>
+                                            <TableHead className="text-right">TDS (2%)</TableHead>
+                                            <TableHead className="text-right font-semibold">Net Credit</TableHead>
+                                            <TableHead className="w-[180px] text-right">Credited At</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {credits.length > 0 ? (
+                                            credits.map((credit: any, idx: number) => (
+                                                <TableRow key={idx} className="hover:bg-accent/40 transition-colors">
+                                                    <TableCell className="font-medium whitespace-nowrap">
+                                                        {credit.memberId}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">₹{credit.grossAmount?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right text-destructive">-₹{credit.adminCharge?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right text-destructive">-₹{credit.tdsDeducted?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right text-primary font-bold">₹{credit.netAmount?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right text-xs text-muted-foreground whitespace-nowrap">
+                                                        {credit.creditedAt ? format(parseISO(credit.creditedAt), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                                                    {pool?.status === 'pending' || !pool 
+                                                        ? "Distribution has not been triggered for this month yet." 
+                                                        : "No eligible users found for this month."}
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
                             </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
+                </>
+            )}
         </div>
     );
 }
