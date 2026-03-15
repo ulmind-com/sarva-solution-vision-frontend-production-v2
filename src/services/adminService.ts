@@ -144,6 +144,23 @@ export const triggerSelfRepurchaseDistribution = async (year: number, month: num
   return response.data;
 };
 
+export const getSelfRepurchaseLivePool = async () => {
+  const response = await api.get('/api/v1/admin/self-repurchase-bonus/live-pool');
+  return response.data;
+};
+
+export const getSelfRepurchaseEligibleUsers = async (month?: string) => {
+  const params: Record<string, unknown> = {};
+  if (month) params.month = month;
+  const response = await api.get('/api/v1/admin/self-repurchase-bonus/eligible-users', { params });
+  return response.data;
+};
+
+export const getSelfRepurchaseBvHistory = async () => {
+  const response = await api.get('/api/v1/admin/self-repurchase-bonus/bv-history');
+  return response.data;
+};
+
 export const getGlobalRepurchaseHistory = async (page = 1, limit = 20, memberId?: string) => {
   const params: Record<string, unknown> = { page, limit };
   if (memberId) params.memberId = memberId;

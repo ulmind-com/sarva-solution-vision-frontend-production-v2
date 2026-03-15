@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
     Table,
@@ -13,35 +10,26 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { getGlobalRepurchaseHistory } from "@/services/adminService";
-import { useDebounce } from "@/hooks/useDebounce";
+import { getSelfRepurchaseBvHistory } from "@/services/adminService";
 
 export default function GlobalRepurchaseHistory() {
     const [loading, setLoading] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [history, setHistory] = useState<any[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const debouncedSearch = useDebounce(searchTerm, 500);
-    const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
 
     useEffect(() => {
-        fetchData(1, debouncedSearch);
-    }, [debouncedSearch]);
+        fetchData();
+    }, []);
 
-    const fetchData = async (page: number, memberId = "") => {
+    const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await getGlobalRepurchaseHistory(page, 20, memberId);
+            const res = await getSelfRepurchaseBvHistory();
             if (res.success) {
-                setHistory(res.data?.history || res.data?.docs || []);
-                if (res.data?.pagination) {
-                    setPagination({
-                        page: res.data.pagination.currentPage || page,
-                        totalPages: res.data.pagination.totalPages || 1
-                    });
-                }
+                setHistory(res.data || []);
             }
         } catch (error) {
-            console.error("Failed to fetch global history:", error);
+            console.error("Failed to fetch BV history:", error);
         } finally {
             setLoading(false);
         }
@@ -51,30 +39,17 @@ export default function GlobalRepurchaseHistory() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-lg glass premium-shadow border-primary/10">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Global Repurchase History</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">SRB Company BV History</h1>
                     <p className="text-muted-foreground mt-1">
-                        Log of all repurchase bonuses distributed to network members.
+                        Month-wise log of Company total BV and Self Repurchase Bonus pool distribution status.
                     </p>
                 </div>
             </div>
 
             <Card className="glass premium-shadow overflow-hidden">
                 <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <CardTitle>Distribution Log</CardTitle>
-                            <CardDescription>Search distributions by Member ID.</CardDescription>
-                        </div>
-                        <div className="relative w-full sm:w-72">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by Member ID..."
-                                className="pl-9"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                    </div>
+                    <CardTitle>Monthly Aggregated Records</CardTitle>
+                    <CardDescription>Company BV totals by calendar month.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto min-h-[400px]">
@@ -86,40 +61,54 @@ export default function GlobalRepurchaseHistory() {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-muted/50">
-                                        <TableHead>Date / Time</TableHead>
-                                        <TableHead>Member ID</TableHead>
-                                        <TableHead>User Name</TableHead>
-                                        <TableHead>Month Pool</TableHead>
-                                        <TableHead>Bonus Amount (₹)</TableHead>
+                                        <TableHead>Month</TableHead>
+                                        <TableHead>Total BV Generated</TableHead>
+                                        <TableHead>Transactions</TableHead>
+                                        <TableHead>Pool Status</TableHead>
+                                        <TableHead>Pool Amount</TableHead>
+                                        <TableHead>Qualifiers</TableHead>
+                                        <TableHead className="text-right">Net Share / User</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {history.length > 0 ? (
-                                        history.map((record) => (
-                                            <TableRow key={record._id} className="hover:bg-accent/40 transition-colors">
-                                                <TableCell className="text-muted-foreground whitespace-nowrap">
-                                                    {record.createdAt ? format(new Date(record.createdAt), 'dd MMM yyyy, hh:mm a') : 'N/A'}
+                                        history.map((record, index) => (
+                                            <TableRow key={`${record.year}-${record.month}-${index}`} className="hover:bg-accent/40 transition-colors">
+                                                <TableCell className="font-semibold whitespace-nowrap">
+                                                    {format(new Date(record.year, record.month - 1), 'MMMM yyyy')}
                                                 </TableCell>
-                                                <TableCell className="font-semibold text-primary">
-                                                    {record.user?.memberId || record.memberId}
+                                                <TableCell className="font-bold text-primary">
+                                                    {record.companyTotalBV?.toLocaleString('en-IN') || 0} BV
                                                 </TableCell>
-                                                <TableCell className="font-medium">
-                                                    {record.user?.fullName || record.fullName || 'Unknown'}
+                                                <TableCell className="text-muted-foreground">
+                                                    {record.totalTransactions || 0}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant="outline" className="font-normal bg-background/50">
-                                                        {record.monthYear || record.month || 'N/A'}
-                                                    </Badge>
+                                                    {record.poolStatus === 'distributed' && (
+                                                        <Badge className="bg-green-500 hover:bg-green-600">Distributed</Badge>
+                                                    )}
+                                                    {record.poolStatus === 'pending' && (
+                                                        <Badge variant="outline" className="text-amber-500 border-amber-500/20 bg-amber-500/10">Pending</Badge>
+                                                    )}
+                                                    {record.poolStatus === 'held' && (
+                                                        <Badge variant="secondary">Held</Badge>
+                                                    )}
                                                 </TableCell>
-                                                <TableCell className="text-green-600 font-bold">
-                                                    +₹{record.amount?.toLocaleString('en-IN') || '0'}
+                                                <TableCell className="font-medium text-green-600">
+                                                    ₹{record.actualPoolAmount ? record.actualPoolAmount.toLocaleString('en-IN') : record.projectedPool?.toLocaleString('en-IN') || 0}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {record.eligibleUserCount ?? '-'}
+                                                </TableCell>
+                                                <TableCell className="text-right font-bold">
+                                                    ₹{record.netSharePerUser?.toLocaleString('en-IN') ?? '-'}
                                                 </TableCell>
                                             </TableRow>
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                                                {searchTerm ? "No distributions found for this member." : "No global repurchase distributions logged."}
+                                            <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                                                No Company BV history records found.
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -127,32 +116,6 @@ export default function GlobalRepurchaseHistory() {
                             </Table>
                         )}
                     </div>
-
-                    {!loading && pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-between px-4 py-3 border-t">
-                            <div className="text-sm text-muted-foreground">
-                                Page {pagination.page} of {pagination.totalPages}
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={pagination.page <= 1}
-                                    onClick={() => fetchData(pagination.page - 1, debouncedSearch)}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={pagination.page >= pagination.totalPages}
-                                    onClick={() => fetchData(pagination.page + 1, debouncedSearch)}
-                                >
-                                    Next
-                                </Button>
-                            </div>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
         </div>

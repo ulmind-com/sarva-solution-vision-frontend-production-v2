@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Plus, AlertCircle, Building, Users, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { getSelfRepurchaseCompanyBv, getSelfRepurchaseDistribution, triggerSelfRepurchaseDistribution } from "@/services/adminService";
+import { getSelfRepurchaseCompanyBv, getSelfRepurchaseEligibleUsers, triggerSelfRepurchaseDistribution } from "@/services/adminService";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -71,7 +71,7 @@ export default function RepurchasePools() {
         try {
             const [bvRes, distRes] = await Promise.all([
                 getSelfRepurchaseCompanyBv(monthStr).catch(() => ({ success: false, data: null })),
-                getSelfRepurchaseDistribution(monthStr).catch(() => ({ success: false, data: null }))
+                getSelfRepurchaseEligibleUsers(monthStr).catch(() => ({ success: false, data: null }))
             ]);
 
             if (bvRes.success) {
@@ -128,8 +128,9 @@ export default function RepurchasePools() {
         }
     };
 
-    const pool = distributionData?.pool;
-    const credits = distributionData?.credits || [];
+    const pool = distributionData;
+    const eligibleUsers = distributionData?.eligibleUsers || [];
+    const isDistributed = pool?.poolStatus === 'distributed';
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto pb-8">
@@ -168,7 +169,7 @@ export default function RepurchasePools() {
 
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button disabled={triggering} className="shadow-glow-primary min-w-[180px]">
+                            <Button disabled={triggering || isDistributed} className={`${isDistributed ? 'opacity-50' : 'shadow-glow-primary'} min-w-[180px]`}>
                                 {triggering ? (
                                     <>
                                         <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"></div>
@@ -177,7 +178,7 @@ export default function RepurchasePools() {
                                 ) : (
                                     <>
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Trigger {format(new Date(selectedYear, selectedMonth - 1), 'MMM')} Distribution
+                                        {isDistributed ? 'Already Distributed' : `Trigger ${format(new Date(selectedYear, selectedMonth - 1), 'MMM')} Distribution`}
                                     </>
                                 )}
                             </Button>
@@ -233,9 +234,9 @@ export default function RepurchasePools() {
                                 <div className="h-4 w-4 text-primary rounded-full bg-primary/10 flex items-center justify-center font-bold text-[10px]">₹</div>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-primary">₹{(companyBvData?.projectedPool || pool?.poolAmount || 0).toLocaleString('en-IN')}</div>
+                                <div className="text-2xl font-bold text-primary">₹{(pool?.poolAmount || companyBvData?.projectedPool || 0).toLocaleString('en-IN')}</div>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    Distributed to eligible qualifiers
+                                    {isDistributed ? 'Distributed to qualifiers' : 'Projected for eligible qualifiers'}
                                 </p>
                             </CardContent>
                         </Card>
@@ -249,11 +250,11 @@ export default function RepurchasePools() {
                                 <Users className="h-4 w-4 text-primary" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-primary">{pool?.eligibleUserCount || pool?.totalQualifiers || credits.length || 0}</div>
+                                <div className="text-2xl font-bold text-primary">{pool?.eligibleUserCount || eligibleUsers.length || 0}</div>
                                 <div className="mt-1 flex items-center">
                                     <span className="text-xs mr-2">Status:</span>
-                                    <Badge variant={pool?.status === 'distributed' ? 'default' : 'secondary'} className={`text-[10px] h-4 px-1 py-0 ${pool?.status === 'distributed' ? 'bg-green-500 hover:bg-green-600' : ''}`}>
-                                        {pool?.status ? pool?.status.toUpperCase() : 'PENDING'}
+                                    <Badge variant={isDistributed ? 'default' : 'secondary'} className={`text-[10px] h-4 px-1 py-0 ${isDistributed ? 'bg-green-500 hover:bg-green-600' : ''}`}>
+                                        {pool?.poolStatus ? pool?.poolStatus.toUpperCase() : 'PENDING'}
                                     </Badge>
                                 </div>
                             </CardContent>
@@ -268,12 +269,6 @@ export default function RepurchasePools() {
                                     <CardTitle>Distribution Details</CardTitle>
                                     <CardDescription>Per-user breakdown for {format(new Date(selectedYear, selectedMonth - 1), 'MMMM yyyy')}</CardDescription>
                                 </div>
-                                {pool?.status === 'distributed' && (
-                                    <div className="text-right">
-                                        <div className="text-sm font-semibold text-primary">₹{pool?.netSharePerUser?.toLocaleString('en-IN') || 0}</div>
-                                        <div className="text-xs text-muted-foreground">Net Per User</div>
-                                    </div>
-                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
@@ -281,36 +276,42 @@ export default function RepurchasePools() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-muted/50">
+                                            <TableHead>User</TableHead>
                                             <TableHead>Member ID</TableHead>
-                                            <TableHead className="text-right">Gross Share</TableHead>
+                                            <TableHead className="text-right">Window BV</TableHead>
+                                            <TableHead className="text-right">{isDistributed ? 'Gross Share' : 'Est. Gross'}</TableHead>
                                             <TableHead className="text-right">Admin (5%)</TableHead>
                                             <TableHead className="text-right">TDS (2%)</TableHead>
-                                            <TableHead className="text-right font-semibold">Net Credit</TableHead>
-                                            <TableHead className="w-[180px] text-right">Credited At</TableHead>
+                                            <TableHead className="text-right font-semibold">{isDistributed ? 'Net Credit' : 'Est. Net'}</TableHead>
+                                            <TableHead className="text-right w-[100px]">Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {credits.length > 0 ? (
-                                            credits.map((credit: any, idx: number) => (
+                                        {eligibleUsers.length > 0 ? (
+                                            eligibleUsers.map((user: any, idx: number) => (
                                                 <TableRow key={idx} className="hover:bg-accent/40 transition-colors">
                                                     <TableCell className="font-medium whitespace-nowrap">
-                                                        {credit.memberId}
+                                                        {user.fullName || 'Unknown'}
                                                     </TableCell>
-                                                    <TableCell className="text-right">₹{credit.grossAmount?.toLocaleString('en-IN')}</TableCell>
-                                                    <TableCell className="text-right text-destructive">-₹{credit.adminCharge?.toLocaleString('en-IN')}</TableCell>
-                                                    <TableCell className="text-right text-destructive">-₹{credit.tdsDeducted?.toLocaleString('en-IN')}</TableCell>
-                                                    <TableCell className="text-right text-primary font-bold">₹{credit.netAmount?.toLocaleString('en-IN')}</TableCell>
-                                                    <TableCell className="text-right text-xs text-muted-foreground whitespace-nowrap">
-                                                        {credit.creditedAt ? format(parseISO(credit.creditedAt), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                                                    <TableCell>
+                                                        {user.memberId}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">{user.windowBV || 0} BV</TableCell>
+                                                    <TableCell className="text-right">₹{user.grossAmount?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right text-destructive">-₹{user.adminCharge?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right text-destructive">-₹{user.tdsDeducted?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right text-primary font-bold">₹{user.netAmount?.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Badge variant="outline" className={`font-normal ${user.status === 'credited' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
+                                                            {user.status || 'projected'}
+                                                        </Badge>
                                                     </TableCell>
                                                 </TableRow>
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                                                    {pool?.status === 'pending' || !pool 
-                                                        ? "Distribution has not been triggered for this month yet." 
-                                                        : "No eligible users found for this month."}
+                                                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                                                    No eligible users found for this month.
                                                 </TableCell>
                                             </TableRow>
                                         )}
