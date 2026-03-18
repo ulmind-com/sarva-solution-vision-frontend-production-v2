@@ -92,7 +92,7 @@ interface UserDetailData {
   startupBonus: { earned: number };
   leadershipBonus: { earned: number };
   kyc: {
-    status: 'none' | 'pending' | 'approved' | 'rejected' | 'verified';
+    status: 'none' | 'pending' | 'approved' | 'rejected';
     aadhaarNumber?: string;
     panCardNumber?: string;
     aadhaarFront?: { url: string };
@@ -178,7 +178,7 @@ const UserDetail = () => {
     try {
       setIsKYCActionLoading(true);
       await api.patch(`/api/v1/admin/kyc/verify/${memberId}`, {
-        status: 'verified',
+        status: 'approved',
       });
       toast.success('KYC verified successfully');
       setIsApproveDialogOpen(false);
@@ -581,7 +581,7 @@ const UserDetail = () => {
         {/* Tab 2: KYC Documents */}
         <TabsContent value="kyc" className="space-y-6">
           {/* Status Banners */}
-          {(user.kyc?.status === 'approved' || user.kyc?.status === 'verified') && (
+          {user.kyc?.status === 'approved' && (
             <Alert className="border-primary/30 bg-primary/10">
               <CheckCircle className="h-4 w-4 text-primary" />
               <AlertDescription className="text-primary">
@@ -611,7 +611,7 @@ const UserDetail = () => {
               <Badge
                 variant="outline"
                 className={
-                  user.kyc?.status === 'approved' || user.kyc?.status === 'verified'
+                  user.kyc?.status === 'approved'
                     ? 'bg-primary/20 text-primary border-primary/30 mt-1'
                     : user.kyc?.status === 'pending'
                       ? 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30 mt-1'
@@ -620,7 +620,7 @@ const UserDetail = () => {
                         : 'bg-muted text-muted-foreground mt-1'
                 }
               >
-                {user.kyc?.status === 'verified' ? 'Approved' : user.kyc?.status ? user.kyc.status.charAt(0).toUpperCase() + user.kyc.status.slice(1) : 'Not Submitted'}
+                {user.kyc?.status ? user.kyc.status.charAt(0).toUpperCase() + user.kyc.status.slice(1) : 'Not Submitted'}
               </Badge>
             </div>
             <div>

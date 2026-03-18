@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Upload, Loader2, CheckCircle, Clock, XCircle, FileImage, X, Lock } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, Clock, XCircle, FileImage, X, Lock, ZoomIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FileUploadState {
@@ -210,16 +211,29 @@ const KYCDetailsTab = () => {
       <div className="space-y-2">
         <Label>{label}</Label>
         {disabled && existingUrl ? (
-          // Show uploaded document in locked state
-          <div className="border border-border rounded-lg p-4 bg-muted/50">
-            <div className="flex items-center gap-3">
-              <FileImage className="h-8 w-8 text-primary" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Document Uploaded</p>
-                <Badge variant="secondary" className="mt-1">Submitted</Badge>
+          // Show uploaded document image in locked state with click to zoom
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="relative border border-border rounded-lg overflow-hidden cursor-pointer group">
+                <img
+                  src={existingUrl}
+                  alt={label}
+                  className="w-full h-40 object-contain bg-muted/50"
+                />
+                <div className="absolute inset-0 bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                  <ZoomIn className="h-6 w-6 text-background" />
+                </div>
+                <Badge variant="secondary" className="absolute top-2 right-2">Submitted</Badge>
               </div>
-            </div>
-          </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <img
+                src={existingUrl}
+                alt={label}
+                className="w-full max-h-[80vh] object-contain rounded-md"
+              />
+            </DialogContent>
+          </Dialog>
         ) : hasPreview ? (
           // Show preview with option to remove
           <div className="relative border border-border rounded-lg overflow-hidden">

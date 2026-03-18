@@ -23,10 +23,11 @@ interface AdminUser {
   memberId: string;
   email: string;
   phone: string;
-  rank: string;
+  currentRank: string;
   status: 'active' | 'inactive';
-  joiningDate: string;
-  activationDate?: string | null;
+  createdAt: string;
+  isFirstPurchaseDone?: boolean;
+  activationDate?: string;
 }
 
 interface UsersResponse {
@@ -67,7 +68,7 @@ const UserManagement = () => {
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd-MM-yyyy');
+      return format(new Date(dateString), 'dd-MM-yyyy, hh:mm a');
     } catch {
       return dateString;
     }
@@ -173,7 +174,7 @@ const UserManagement = () => {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">
-                          {user.rank}
+                          {user.currentRank || 'Associate'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -188,10 +189,12 @@ const UserManagement = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {formatDate(user.joiningDate)}
+                        {user.createdAt ? formatDate(user.createdAt) : 'N/A'}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {user.activationDate ? formatDate(user.activationDate) : 'N/A'}
+                        {user.activationDate
+                          ? formatDate(user.activationDate)
+                          : 'N/A'}
                       </TableCell>
                       <TableCell>
                         <Button
