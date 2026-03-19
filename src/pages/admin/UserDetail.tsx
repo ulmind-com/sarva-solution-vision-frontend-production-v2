@@ -464,7 +464,7 @@ const UserDetail = () => {
 
         {/* Tab 1: Overview & Network */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2">
             {/* Personal Info */}
             <Card>
               <CardHeader>
@@ -511,30 +511,6 @@ const UserDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Wallet Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Wallet Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Available Balance</span>
-                  <span className="font-bold text-green-600 text-lg">{formatCurrency(user.wallet?.availableBalance || 0)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Total Earnings</span>
-                  <span className="font-medium text-foreground">{formatCurrency(user.wallet?.totalEarnings || 0)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Withdrawn Amount</span>
-                  <span className="font-medium text-foreground">{formatCurrency(user.wallet?.withdrawnAmount || 0)}</span>
-                </div>
-                <div className="flex items-center justify-between pt-1 border-t">
-                  <span className="text-muted-foreground">Pending Withdraw</span>
-                  <span className="font-medium text-yellow-600">{formatCurrency(user.wallet?.pendingWithdrawal || 0)}</span>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Business Stats */}

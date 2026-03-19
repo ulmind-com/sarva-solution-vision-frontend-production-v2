@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, EyeOff, Lock, ShieldCheck } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Lock } from 'lucide-react';
+import { api } from '@/lib/api';
 
 const ChangePassword = () => {
   const { toast } = useToast();
@@ -28,25 +29,37 @@ const ChangePassword = () => {
       return;
     }
 
-    if (passwords.new.length < 8) {
+    if (passwords.new.length < 6) {
       toast({
         title: "Weak Password",
-        description: "Password must be at least 8 characters long.",
+        description: "Password must be at least 6 characters long.",
         variant: "destructive"
       });
       return;
     }
 
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    
-    setPasswords({ current: '', new: '', confirm: '' });
-    
-    toast({
-      title: "Password Changed Successfully",
-      description: "Your password has been updated. Please use your new password for future logins.",
-    });
+    try {
+      await api.put('/api/v1/user/change-password', {
+        currentPassword: passwords.current,
+        newPassword: passwords.new
+      });
+      
+      setPasswords({ current: '', new: '', confirm: '' });
+      
+      toast({
+        title: "Password Changed Successfully",
+        description: "Your password has been updated. Please use your new password for future logins.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update Failed",
+        description: error.response?.data?.message || "Failed to change password. Please check your current password.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -129,19 +142,6 @@ const ChangePassword = () => {
                   {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-            </div>
-
-            <div className="bg-muted/50 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-sm font-medium mb-2">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                Password Requirements
-              </div>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>At least 8 characters long</li>
-                <li>Include uppercase and lowercase letters</li>
-                <li>Include at least one number</li>
-                <li>Include at least one special character</li>
-              </ul>
             </div>
 
             <Button onClick={handleUpdate} disabled={isLoading} className="w-full">

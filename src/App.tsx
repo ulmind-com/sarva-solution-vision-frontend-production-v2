@@ -50,6 +50,7 @@ import RepurchasePools from "./pages/admin/bonus/RepurchasePools";
 import LiveQualifiers from "./pages/admin/bonus/LiveQualifiers";
 import GlobalRepurchaseHistory from "./pages/admin/bonus/RepurchaseHistory";
 import AdminBeginnerBonus from "./pages/admin/bonus/AdminBeginnerBonus";
+import WalletAdjustment from "./pages/admin/WalletAdjustment";
 
 // Admin - Products
 import AddProduct from "./pages/admin/products/AddProduct";
@@ -248,6 +249,13 @@ const AppRoutes = () => {
         <ProtectedRoute requireAdmin>
           <AdminLayout>
             <WalletLogs />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/wallet-adjustments" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <WalletAdjustment />
           </AdminLayout>
         </ProtectedRoute>
       } />
