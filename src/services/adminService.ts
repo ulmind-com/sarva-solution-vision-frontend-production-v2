@@ -182,33 +182,40 @@ export const triggerRepurchaseDistribution = async () => {
 
 // ===== Beginner Matching Bonus Management =====
 
-export const getBeginnerBonusPreview = async (month?: number, year?: number) => {
-  const params: Record<string, unknown> = {};
-  if (month) params.month = month;
-  if (year) params.year = year;
-  const response = await api.get('/api/v1/admin/bonus/beginner-matching/preview', { params });
-  return response.data;
-};
-
-export const distributeBeginnerBonus = async (month?: number, year?: number) => {
-  const data: Record<string, unknown> = {};
-  if (month) data.month = month;
-  if (year) data.year = year;
-  const response = await api.post('/api/v1/admin/bonus/beginner-matching/distribute', data);
-  return response.data;
-};
-
-export const getBeginnerBonusHistory = async (page = 1, limit = 10) => {
-  const response = await api.get('/api/v1/admin/bonus/beginner-matching/history', {
+export const getBeginnerBonusPools = async (page = 1, limit = 12) => {
+  const response = await api.get('/api/v1/admin/beginner-bonus/pools', {
     params: { page, limit }
   });
   return response.data;
 };
 
-export const getBeginnerBonusQualifiers = async (month: number, year: number, page = 1, limit = 50) => {
-  const response = await api.get('/api/v1/admin/bonus/beginner-matching/qualifiers', {
-    params: { month, year, page, limit }
-  });
+export const getBeginnerBonusPoolDetail = async (year: number, month: number) => {
+  const response = await api.get(`/api/v1/admin/beginner-bonus/pools/${year}/${month}`);
+  return response.data;
+};
+
+export const getActiveBeginnerBonusUsers = async () => {
+  const response = await api.get('/api/v1/admin/beginner-bonus/users');
+  return response.data;
+};
+
+export const getBeginnerBonusLivePool = async () => {
+  const response = await api.get('/api/v1/admin/beginner-bonus/live-pool');
+  return response.data;
+};
+
+export const getBeginnerBonusUserDetail = async (memberId: string) => {
+  const response = await api.get(`/api/v1/admin/beginner-bonus/users/${memberId}`);
+  return response.data;
+};
+
+export const triggerBeginnerBonus = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/beginner-bonus/trigger', { year, month });
+  return response.data;
+};
+
+export const applyBeginnerBonusCredits = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/beginner-bonus/apply-credits', { year, month });
   return response.data;
 };
 

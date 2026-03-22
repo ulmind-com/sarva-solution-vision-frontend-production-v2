@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { Copy, Plus, AlertCircle, RefreshCw } from "lucide-react";
+import { Copy, Plus, AlertCircle, RefreshCw, Zap, CheckCircle2, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Table,
     TableBody,
@@ -14,7 +14,12 @@ import {
 } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { getBeginnerBonusPreview, distributeBeginnerBonus } from "@/services/adminService";
+import { 
+    getBeginnerBonusLivePool, 
+    getBeginnerBonusPools, 
+    triggerBeginnerBonus, 
+    applyBeginnerBonusCredits 
+} from "@/services/adminService";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -26,61 +31,79 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminBeginnerBonus() {
-    const [loading, setLoading] = useState(true);
+    const [loadingUsers, setLoadingUsers] = useState(true);
+    const [loadingPools, setLoadingPools] = useState(true);
     const [triggering, setTriggering] = useState(false);
+    const [applying, setApplying] = useState(false);
 
-    // Default to previous month
     const today = new Date();
-    // Default to current month so admin sees live data matching the user tracker
-    const [selectedMonth, setSelectedMonth] = useState<string>((today.getMonth() + 1).toString());
-    const [selectedYear, setSelectedYear] = useState<string>(today.getFullYear().toString());
+    const [actionMonth, setActionMonth] = useState<string>((today.getMonth() + 1).toString());
+    const [actionYear, setActionYear] = useState<string>(today.getFullYear().toString());
 
-    const [previewData, setPreviewData] = useState<any>(null);
+    const [livePoolData, setLivePoolData] = useState<any>(null);
+    const [activeUsers, setActiveUsers] = useState<any[]>([]);
+    const [pools, setPools] = useState<any[]>([]);
+    const [poolPagination, setPoolPagination] = useState({ page: 1, totalPages: 1 });
+
     const { toast } = useToast();
 
     useEffect(() => {
-        fetchPreview();
-    }, [selectedMonth, selectedYear]);
+        fetchUsers();
+        fetchPools(1);
+    }, []);
 
-    const fetchPreview = async () => {
-        setLoading(true);
+    const fetchUsers = async () => {
+        setLoadingUsers(true);
         try {
-            const res = await getBeginnerBonusPreview(parseInt(selectedMonth), parseInt(selectedYear));
-            if (res.success) {
-                setPreviewData(res.data);
+            const res = await getBeginnerBonusLivePool();
+            if (res.success && res.data) {
+                setLivePoolData(res.data.pool);
+                setActiveUsers(res.data.users || []);
             }
         } catch (error) {
-            console.error("Failed to fetch Beginner Bonus Preview:", error);
+            console.error("Failed to fetch live pool data:", error);
         } finally {
-            setLoading(false);
+            setLoadingUsers(false);
         }
     };
 
-    const handleDistribute = async () => {
+    const fetchPools = async (page: number) => {
+        setLoadingPools(true);
+        try {
+            const res = await getBeginnerBonusPools(page, 12);
+            if (res.data && Array.isArray(res.data.pools)) {
+                setPools(res.data.pools);
+                setPoolPagination({
+                    page: res.data.page || page,
+                    totalPages: Math.ceil((res.data.total || 1) / 12)
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch pools:", error);
+        } finally {
+            setLoadingPools(false);
+        }
+    };
+
+    const handleTrigger = async () => {
         setTriggering(true);
         try {
-            const res = await distributeBeginnerBonus(parseInt(selectedMonth), parseInt(selectedYear));
-            if (res.success) {
+            const y = parseInt(actionYear);
+            const m = parseInt(actionMonth);
+            const res = await triggerBeginnerBonus(y, m);
+            if (res) {
                 toast({
-                    title: "Distribution Successful",
-                    description: res.message || "Beginner Matching Bonus has been distributed.",
-                    variant: "default",
+                    title: "Trigger Successful",
+                    description: "Month-end computation staged successfully.",
                 });
-                fetchPreview(); // Refresh data to show it's processed
-            } else {
-                toast({
-                    title: "Distribution Failed",
-                    description: res.message || "Failed to trigger distribution.",
-                    variant: "destructive",
-                });
+                fetchPools(1); 
             }
         } catch (error: any) {
             toast({
-                title: "Distribution Error",
-                description: error.response?.data?.message || "An unexpected error occurred during distribution.",
+                title: "Trigger Failed",
+                description: error.response?.data?.error || error.response?.data?.message || "Failed to trigger.",
                 variant: "destructive",
             });
         } finally {
@@ -88,35 +111,57 @@ export default function AdminBeginnerBonus() {
         }
     };
 
-    const isProcessed = previewData?.isProcessed;
-    const qualifiers = previewData?.qualifiers || [];
+    const handleApplyCredits = async () => {
+        setApplying(true);
+        try {
+            const y = parseInt(actionYear);
+            const m = parseInt(actionMonth);
+            const res = await applyBeginnerBonusCredits(y, m);
+            if (res) {
+                toast({
+                    title: "Credits Applied",
+                    description: "User wallets have been credited.",
+                });
+                fetchPools(1);
+            }
+        } catch (error: any) {
+            toast({
+                title: "Apply Failed",
+                description: error.response?.data?.error || error.response?.data?.message || "Failed to apply credits.",
+                variant: "destructive",
+            });
+        } finally {
+            setApplying(false);
+        }
+    };
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-lg glass premium-shadow border-primary/10">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Beginner Matching Bonus</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Beginner Matching Admin</h1>
                     <p className="text-muted-foreground mt-1">
-                        Preview and distribute monthly matching units with 18% BV Capping Pool
+                        Monitor live eligible users, manage monthly pools, and execute payouts.
                     </p>
                 </div>
-
-                <div className="flex items-center gap-4">
-                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                        <SelectTrigger className="w-[120px]">
+                
+                {/* Management Actions */}
+                <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <span className="text-sm font-medium text-muted-foreground mr-2">Action Target:</span>
+                    <Select value={actionMonth} onValueChange={setActionMonth}>
+                        <SelectTrigger className="w-[110px] h-9">
                             <SelectValue placeholder="Month" />
                         </SelectTrigger>
                         <SelectContent>
                             {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                                 <SelectItem key={m} value={m.toString()}>
-                                    {new Date(2000, m - 1).toLocaleString('default', { month: 'long' })}
+                                    {new Date(2000, m - 1).toLocaleString('default', { month: 'short' })}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-
-                    <Select value={selectedYear} onValueChange={setSelectedYear}>
-                        <SelectTrigger className="w-[100px]">
+                    <Select value={actionYear} onValueChange={setActionYear}>
+                        <SelectTrigger className="w-[90px] h-9">
                             <SelectValue placeholder="Year" />
                         </SelectTrigger>
                         <SelectContent>
@@ -126,168 +171,260 @@ export default function AdminBeginnerBonus() {
                         </SelectContent>
                     </Select>
 
-                    <Button variant="outline" size="icon" onClick={fetchPreview}>
-                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                    </Button>
+                    <div className="mx-2 w-px h-6 bg-border"></div>
+
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" disabled={triggering} className="gap-1 border-primary/30 text-primary hover:bg-primary/10">
+                                <Zap className="h-4 w-4" /> {triggering ? "..." : "Stage"}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="glass">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Stage Pool Distribution?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will compute the pool amounts and unit values for <strong>{actionMonth}/{actionYear}</strong>. 
+                                    It creates wallet credit records but does <strong>NOT</strong> apply the money to wallets yet.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleTrigger} className="bg-primary text-primary-foreground">Confirm Stage</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button size="sm" disabled={applying} className="gap-1 shadow-glow-primary">
+                                <CheckCircle2 className="h-4 w-4" /> {applying ? "..." : "Apply"}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="glass border-green-500/20">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle className="text-green-600">Apply Credits to Wallets?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will irrevocably apply the staged funds to the users' available wallets for <strong>{actionMonth}/{actionYear}</strong>.
+                                    This action is final and cannot be easily undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleApplyCredits} className="bg-green-600 hover:bg-green-700 text-white">Execute Final Payout</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="glass premium-shadow">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Company BV</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? <Skeleton className="h-8 w-24" /> : (
-                            <div className="text-2xl font-bold">{previewData?.totalCompanyBV?.toLocaleString() || 0}</div>
-                        )}
-                    </CardContent>
-                </Card>
-                <Card className="glass premium-shadow">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">18% Pool Amount</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? <Skeleton className="h-8 w-24" /> : (
-                            <div className="text-2xl font-bold text-primary">₹ {previewData?.poolAmount?.toLocaleString('en-IN') || 0}</div>
-                        )}
-                    </CardContent>
-                </Card>
-                <Card className="glass premium-shadow">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Units Generated</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? <Skeleton className="h-8 w-24" /> : (
-                            <div className="text-2xl font-bold">{previewData?.totalUnits || 0}</div>
-                        )}
-                    </CardContent>
-                </Card>
-                <Card className="glass premium-shadow border-primary/20">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Value Per Unit (1000 BV)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? <Skeleton className="h-8 w-24" /> : (
-                            <div className="text-2xl font-bold text-green-500">₹ {previewData?.pointValue?.toFixed(2) || 0}</div>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
+            <Tabs defaultValue="estimates" className="w-full">
+                <TabsList className="grid w-full md:w-[400px] grid-cols-2 mb-6">
+                    <TabsTrigger value="estimates">Live Estimates (Active Users)</TabsTrigger>
+                    <TabsTrigger value="pools">Monthly Pools History</TabsTrigger>
+                </TabsList>
 
-            <Card className="glass premium-shadow overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 bg-muted/20 pb-4">
-                    <div>
-                        <CardTitle>Qualifiers Preview</CardTitle>
-                        <CardDescription>
-                            Users automatically get their personal purchase BV added to their weaker leg.
-                        </CardDescription>
-                    </div>
-                    <div>
-                        {isProcessed ? (
-                            <Badge variant="default" className="bg-green-500 px-4 py-1.5 text-sm uppercase">Already Processed</Badge>
-                        ) : (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button disabled={triggering || qualifiers.length === 0} className="shadow-glow-primary">
-                                        {triggering ? "Processing..." : "Distribute Bonus"}
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="glass">
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Execute Distribution?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This will instantly drop <strong>₹ {previewData?.poolAmount?.toLocaleString()}</strong> among {qualifiers.length} qualifiers for {selectedMonth}/{selectedYear}.
-                                            User wallets will be irrevocably credited.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleDistribute} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                                            Confirm Distribution
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto min-h-[400px]">
-                        {loading ? (
-                            <div className="flex items-center justify-center p-12">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                {/* TAB: Live Estimates */}
+                <TabsContent value="estimates">
+                    <div className="space-y-6">
+                        {/* Live Pool Metrics */}
+                        {livePoolData && (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <Card className="glass premium-shadow">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Company Total BV</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{livePoolData.companyTotalBV?.toLocaleString() || 0}</div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="glass premium-shadow border-primary/20 bg-primary/5">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium text-primary">18% Pool Amount</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold text-primary">₹{livePoolData.poolAmount?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || 0}</div>
+                                    </CardContent>
+                                </Card>
+                                <Card className="glass premium-shadow">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Units Generated</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold">{livePoolData.totalUnits || 0}</div>
+                                        <p className="text-xs text-muted-foreground mt-1">{livePoolData.eligibleUserCount || 0} Eligible Users</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="glass premium-shadow border-green-500/20">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-medium text-green-600">Per Unit Value (1000 BV)</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold text-green-600">₹{livePoolData.perUnitValue?.toFixed(2) || '0.00'}</div>
+                                    </CardContent>
+                                </Card>
                             </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-muted/50">
-                                        <TableHead>User / ID</TableHead>
-                                        <TableHead>Left BV (Total)</TableHead>
-                                        <TableHead>Right BV (Total)</TableHead>
-                                        <TableHead>Personal Boost</TableHead>
-                                        <TableHead>Adjusted Weaker</TableHead>
-                                        <TableHead>Units</TableHead>
-                                        <TableHead className="text-right">Est. Payout</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {qualifiers.length > 0 ? (
-                                        qualifiers.map((q: any) => {
-                                            const rawLeft = q.stats.left || 0;
-                                            const rawRight = q.stats.right || 0;
-                                            const pBoost = q.stats.personal || 0;
-                                            const weakerLegVal = Math.min(q.adjustedLeft, q.adjustedRight);
-                                            const payout = (q.units * (previewData?.pointValue || 0)).toFixed(2);
+                        )}
 
-                                            // Identify which side got boosted
-                                            const leftBoosted = rawLeft <= rawRight && pBoost > 0;
-                                            const rightBoosted = rawRight < rawLeft && pBoost > 0;
-
-                                            return (
-                                                <TableRow key={q.userId} className="hover:bg-accent/40 transition-colors">
+                        <Card className="glass premium-shadow overflow-hidden border-t-4 border-t-primary">
+                            <CardHeader className="flex flex-row items-center justify-between bg-muted/20 pb-4">
+                            <div>
+                                <CardTitle>Current Month Live Tracker</CardTitle>
+                                <CardDescription>Real-time view of matching units before month-end closure.</CardDescription>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={fetchUsers}>
+                                <RefreshCw className={`h-4 w-4 ${loadingUsers ? 'animate-spin text-primary' : ''}`} />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader className="bg-muted/50">
+                                        <TableRow>
+                                            <TableHead>User</TableHead>
+                                            <TableHead>Total Left BV</TableHead>
+                                            <TableHead>Total Right BV</TableHead>
+                                            <TableHead className="text-blue-600 text-xs">Self BV (Add-on)</TableHead>
+                                            <TableHead>Adjusted Weaker Leg</TableHead>
+                                            <TableHead>Projected Units</TableHead>
+                                            <TableHead className="text-right">Est. Net Final (₹)</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {loadingUsers ? (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="h-40 text-center">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : activeUsers.length > 0 ? (
+                                            activeUsers.map((u, i) => (
+                                                <TableRow key={i} className="hover:bg-accent/40">
                                                     <TableCell>
-                                                        <div className="font-medium text-foreground">{q.fullName}</div>
-                                                        <div className="text-xs text-muted-foreground font-mono">{q.memberId}</div>
+                                                        <div className="font-medium">{u.fullName}</div>
+                                                        <div className="text-xs text-muted-foreground">{u.memberId}</div>
+                                                    </TableCell>
+                                                    <TableCell>{(u.leftBV || 0).toLocaleString()}</TableCell>
+                                                    <TableCell>{(u.rightBV || 0).toLocaleString()}</TableCell>
+                                                    <TableCell className="text-blue-500 font-medium">+{(u.personalBV || 0).toLocaleString()}</TableCell>
+                                                    <TableCell className="font-semibold text-primary/80">
+                                                        {Math.min(u.adjustedLeft || 0, u.adjustedRight || 0).toLocaleString()} BV
                                                     </TableCell>
                                                     <TableCell>
-                                                        {rawLeft.toLocaleString()}
-                                                        {leftBoosted && <span className="text-xs text-green-500 ml-1">(+{pBoost.toLocaleString()})</span>}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {rawRight.toLocaleString()}
-                                                        {rightBoosted && <span className="text-xs text-green-500 ml-1">(+{pBoost.toLocaleString()})</span>}
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {pBoost.toLocaleString()} BV
-                                                    </TableCell>
-                                                    <TableCell className="font-medium text-primary/80">
-                                                        {weakerLegVal.toLocaleString()} BV
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge variant="outline" className={q.units === 10 ? 'border-chart-4 text-chart-4' : 'border-primary text-primary'}>
-                                                            {q.units} {q.units === 10 && '(MAX)'}
+                                                        <Badge variant={u.cappingReached ? "destructive" : "outline"} className={!u.cappingReached ? "border-green-500 text-green-600" : ""}>
+                                                            {u.finalUnits || u.estimatedUnits} {u.cappingReached && '(MAX)'}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-right font-semibold text-green-600">
-                                                        ₹ {Number(payout).toLocaleString('en-IN')}
+                                                    <TableCell className="text-right">
+                                                        <div className="text-green-600 font-bold">₹{u.estimatedNet?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || '0'}</div>
+                                                        <div className="text-[10px] text-muted-foreground mt-0.5">Gross: ₹{u.estimatedGross?.toLocaleString('en-IN', { maximumFractionDigits: 2 }) || '0'}</div>
                                                     </TableCell>
                                                 </TableRow>
-                                            );
-                                        })
-                                    ) : (
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="h-40 text-center text-muted-foreground">
+                                                    No active members currently qualifying for the pool.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </TabsContent>
+
+                {/* TAB: Monthly Pools */}
+                <TabsContent value="pools">
+                    <Card className="glass premium-shadow overflow-hidden">
+                        <CardHeader className="flex flex-row items-center justify-between bg-muted/20 pb-4">
+                            <div>
+                                <CardTitle>Pool Distributions</CardTitle>
+                                <CardDescription>History of computed pools and their status.</CardDescription>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => fetchPools(1)}>
+                                <RefreshCw className={`h-4 w-4 ${loadingPools ? 'animate-spin text-primary' : ''}`} />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader className="bg-muted/50">
                                         <TableRow>
-                                            <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                                                No eligible users found for this month's requirements.
-                                            </TableCell>
+                                            <TableHead>Target Month</TableHead>
+                                            <TableHead>Total Company BV</TableHead>
+                                            <TableHead className="text-primary">18% Pool Cash</TableHead>
+                                            <TableHead>Total Units</TableHead>
+                                            <TableHead className="text-green-600">Per Unit Value</TableHead>
+                                            <TableHead>Qualifiers</TableHead>
+                                            <TableHead>Status</TableHead>
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {loadingPools ? (
+                                            <TableRow>
+                                                <TableCell colSpan={7} className="h-40 text-center">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : pools.length > 0 ? (
+                                            pools.map((p, i) => (
+                                                <TableRow key={i} className="hover:bg-accent/40">
+                                                    <TableCell className="font-medium whitespace-nowrap flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                        {new Date(p.year, p.month - 1).toLocaleString('default', { month: 'short', year: 'numeric' })}
+                                                    </TableCell>
+                                                    <TableCell>{(p.companyTotalBV || 0).toLocaleString()}</TableCell>
+                                                    <TableCell className="font-bold text-primary">₹{(p.poolAmount || 0).toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell>{p.totalUnits}</TableCell>
+                                                    <TableCell className="font-bold text-green-600">₹{(p.perUnitValue || 0).toFixed(2)}</TableCell>
+                                                    <TableCell>{p.eligibleUserCount}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={p.status === 'distributed' ? 'default' : 'secondary'} className={p.status === 'distributed' ? 'bg-green-500' : 'bg-orange-500'}>
+                                                            {p.status ? p.status.toUpperCase() : 'PENDING'}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={7} className="h-40 text-center text-muted-foreground">
+                                                    No beginner bonus pools have been staged yet.
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            {poolPagination.totalPages > 1 && (
+                                <div className="flex items-center justify-between px-4 py-3 border-t">
+                                    <div className="text-sm text-muted-foreground">
+                                        Page {poolPagination.page} of {poolPagination.totalPages}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline" size="sm"
+                                            disabled={poolPagination.page <= 1}
+                                            onClick={() => fetchPools(poolPagination.page - 1)}
+                                        >
+                                            Previous
+                                        </Button>
+                                        <Button
+                                            variant="outline" size="sm"
+                                            disabled={poolPagination.page >= poolPagination.totalPages}
+                                            onClick={() => fetchPools(poolPagination.page + 1)}
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

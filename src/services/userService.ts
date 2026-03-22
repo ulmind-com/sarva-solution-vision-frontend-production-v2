@@ -120,15 +120,27 @@ export const getSelfRepurchaseBonusStatus = async () => {
 
 // Fetch user's beginner matching bonus status
 export const getBeginnerMatchingStatus = async () => {
-  const response = await api.get('/api/v1/user/bonus/beginner-matching-status');
+  const response = await api.get('/api/v1/user/beginner-bonus/status');
   return response.data;
 };
 
 // Fetch user's beginner matching bonus history
 export const getBeginnerMatchingHistory = async (page = 1, limit = 10) => {
-  const response = await api.get('/api/v1/user/bonus/beginner-matching-history', {
+  const response = await api.get('/api/v1/user/beginner-bonus/history', {
     params: { page, limit }
   });
+  return response.data;
+};
+
+// Fetch beginner matching bonus status for any public member
+export const getPublicBeginnerBonusStatus = async (memberId: string) => {
+  const response = await api.get(`/api/v1/user/beginner-bonus/status/${memberId}`);
+  return response.data;
+};
+
+// Fetch user's beginner matching bonus live estimate
+export const getBeginnerBonusLiveEstimate = async () => {
+  const response = await api.get('/api/v1/user/beginner-bonus/live-estimate');
   return response.data;
 };
 
