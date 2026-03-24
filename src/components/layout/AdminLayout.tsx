@@ -117,6 +117,41 @@ const menuSections: MenuSection[] = [
       { path: '/admin/bonus/beginner/pools', label: 'Manage & Distribute', icon: List },
     ],
   },
+  {
+    label: 'Start Up Bonus',
+    icon: Gift,
+    items: [
+      { path: '/admin/bonus/startup/pools', label: 'Manage & Distribute', icon: List },
+    ],
+  },
+  {
+    label: 'Leadership Bonus',
+    icon: Gift,
+    items: [
+      { path: '/admin/bonus/leadership/pools', label: 'Manage & Distribute', icon: List },
+    ],
+  },
+  {
+    label: 'Tour Fund',
+    icon: Gift,
+    items: [
+      { path: '/admin/bonus/tour-fund/pools', label: 'Manage & Distribute', icon: List },
+    ],
+  },
+  {
+    label: 'Health & Education Bonus',
+    icon: Gift,
+    items: [
+      { path: '/admin/bonus/health-education/pools', label: 'Manage & Distribute', icon: List },
+    ],
+  },
+  {
+    label: 'Bike & Car Fund',
+    icon: Gift,
+    items: [
+      { path: '/admin/bonus/bike-car-fund/pools', label: 'Manage & Distribute', icon: List },
+    ],
+  },
 ];
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {

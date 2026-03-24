@@ -31,6 +31,11 @@ import FastTrackBonus from "./pages/dashboard/FastTrackBonus";
 import StarMatchingBonus from "./pages/dashboard/StarMatchingBonus";
 import RepurchaseBonus from "./pages/dashboard/incomes/RepurchaseBonus";
 import BeginnerMatchingBonus from "./pages/dashboard/incomes/BeginnerMatchingBonus";
+import StartupBonus from "./pages/dashboard/incomes/StartupBonus";
+import LeadershipBonus from "./pages/dashboard/incomes/LeadershipBonus";
+import TourFund from "./pages/dashboard/incomes/TourFund";
+import HealthEducationBonus from "./pages/dashboard/incomes/HealthEducationBonus";
+import BikeCarFund from "./pages/dashboard/incomes/BikeCarFund";
 import WelcomeLetter from "./pages/dashboard/WelcomeLetter";
 import PurchaseHistory from "./pages/dashboard/PurchaseHistory";
 import ProductCatalog from "./pages/user/ProductCatalog";
@@ -50,6 +55,11 @@ import RepurchasePools from "./pages/admin/bonus/RepurchasePools";
 import LiveQualifiers from "./pages/admin/bonus/LiveQualifiers";
 import GlobalRepurchaseHistory from "./pages/admin/bonus/RepurchaseHistory";
 import AdminBeginnerBonus from "./pages/admin/bonus/AdminBeginnerBonus";
+import AdminStartupBonus from "./pages/admin/bonus/AdminStartupBonus";
+import AdminLeadershipBonus from "./pages/admin/bonus/AdminLeadershipBonus";
+import AdminTourFund from "./pages/admin/bonus/AdminTourFund";
+import AdminHealthEducationBonus from "./pages/admin/bonus/AdminHealthEducationBonus";
+import AdminBikeCarFund from "./pages/admin/bonus/AdminBikeCarFund";
 import WalletAdjustment from "./pages/admin/WalletAdjustment";
 
 // Admin - Products
@@ -194,6 +204,41 @@ const AppRoutes = () => {
           </DashboardLayout>
         </ProtectedRoute>
       } />
+      <Route path="/dashboard/incomes/startup-bonus" element={
+        <ProtectedRoute>
+          <DashboardLayout>
+            <StartupBonus />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard/incomes/leadership-bonus" element={
+        <ProtectedRoute>
+          <DashboardLayout>
+            <LeadershipBonus />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard/incomes/tour-fund-bonus" element={
+        <ProtectedRoute>
+          <DashboardLayout>
+            <TourFund />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard/incomes/health-education-bonus" element={
+        <ProtectedRoute>
+          <DashboardLayout>
+            <HealthEducationBonus />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard/incomes/bike-car-fund-bonus" element={
+        <ProtectedRoute>
+          <DashboardLayout>
+            <BikeCarFund />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
       <Route path="/dashboard/incomes/:type" element={
         <ProtectedRoute>
           <DashboardLayout>
@@ -316,6 +361,51 @@ const AppRoutes = () => {
         <ProtectedRoute requireAdmin>
           <AdminLayout>
             <AdminBeginnerBonus />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Admin - Startup Bonus Management */}
+      <Route path="/admin/bonus/startup/pools" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <AdminStartupBonus />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Admin - Leadership Bonus Management */}
+      <Route path="/admin/bonus/leadership/pools" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <AdminLeadershipBonus />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Admin - Tour Fund Management */}
+      <Route path="/admin/bonus/tour-fund/pools" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <AdminTourFund />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Admin - Health & Education Bonus Management */}
+      <Route path="/admin/bonus/health-education/pools" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <AdminHealthEducationBonus />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Admin - Bike & Car Fund Management */}
+      <Route path="/admin/bonus/bike-car-fund/pools" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <AdminBikeCarFund />
           </AdminLayout>
         </ProtectedRoute>
       } />

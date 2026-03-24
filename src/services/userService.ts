@@ -144,6 +144,126 @@ export const getBeginnerBonusLiveEstimate = async () => {
   return response.data;
 };
 
+// ===== Startup Bonus User APIs =====
+
+export const getStartupBonusStatus = async () => {
+  const response = await api.get('/api/v1/user/startup-bonus/status');
+  return response.data;
+};
+
+export const getStartupBonusHistory = async (page = 1, limit = 10) => {
+  const response = await api.get('/api/v1/user/startup-bonus/history', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getStartupBonusLiveEstimate = async () => {
+  const response = await api.get('/api/v1/user/startup-bonus/live-estimate');
+  return response.data;
+};
+
+export const getPublicStartupBonusStatus = async (memberId: string) => {
+  const response = await api.get(`/api/v1/user/startup-bonus/status/${memberId}`);
+  return response.data;
+};
+
+// ===== Leadership Bonus User APIs =====
+
+export const getLeadershipBonusStatus = async () => {
+  const response = await api.get('/api/v1/user/leadership-bonus/status');
+  return response.data;
+};
+
+export const getLeadershipBonusHistory = async (page = 1, limit = 10) => {
+  const response = await api.get('/api/v1/user/leadership-bonus/history', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getLeadershipBonusLiveEstimate = async () => {
+  const response = await api.get('/api/v1/user/leadership-bonus/live-estimate');
+  return response.data;
+};
+
+export const getPublicLeadershipBonusStatus = async (memberId: string) => {
+  const response = await api.get(`/api/v1/user/leadership-bonus/status/${memberId}`);
+  return response.data;
+};
+
+// ===== Tour Fund User APIs =====
+
+export const getTourFundStatus = async () => {
+  const response = await api.get('/api/v1/user/tour-fund/status');
+  return response.data;
+};
+
+export const getTourFundHistory = async (page = 1, limit = 10) => {
+  const response = await api.get('/api/v1/user/tour-fund/history', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getTourFundLiveEstimate = async () => {
+  const response = await api.get('/api/v1/user/tour-fund/live-estimate');
+  return response.data;
+};
+
+export const getPublicTourFundStatus = async (memberId: string) => {
+  const response = await api.get(`/api/v1/user/tour-fund/status/${memberId}`);
+  return response.data;
+};
+
+// ===== Health & Education Bonus User APIs =====
+
+export const getHealthEducationBonusStatus = async () => {
+  const response = await api.get('/api/v1/user/health-education-bonus/status');
+  return response.data;
+};
+
+export const getHealthEducationBonusHistory = async (page = 1, limit = 10) => {
+  const response = await api.get('/api/v1/user/health-education-bonus/history', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getHealthEducationBonusLiveEstimate = async () => {
+  const response = await api.get('/api/v1/user/health-education-bonus/live-estimate');
+  return response.data;
+};
+
+export const getPublicHealthEducationBonusStatus = async (memberId: string) => {
+  const response = await api.get(`/api/v1/user/health-education-bonus/status/${memberId}`);
+  return response.data;
+};
+
+// ===== Bike & Car Fund User APIs =====
+
+export const getBikeCarFundStatus = async () => {
+  const response = await api.get('/api/v1/user/bike-car-fund/status');
+  return response.data;
+};
+
+export const getBikeCarFundHistory = async (page = 1, limit = 10) => {
+  const response = await api.get('/api/v1/user/bike-car-fund/history', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getBikeCarFundLiveEstimate = async () => {
+  const response = await api.get('/api/v1/user/bike-car-fund/live-estimate');
+  return response.data;
+};
+
+export const getPublicBikeCarFundStatus = async (memberId: string) => {
+  const response = await api.get(`/api/v1/user/bike-car-fund/status/${memberId}`);
+  return response.data;
+};
+
 // Fetch user's purchase history
 export const getMyPurchases = async (page = 1, limit = 20) => {
   const response = await api.get('/api/v1/user/purchases', {

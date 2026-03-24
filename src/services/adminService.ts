@@ -219,6 +219,201 @@ export const applyBeginnerBonusCredits = async (year: number, month: number) => 
   return response.data;
 };
 
+// ===== Startup Bonus Admin APIs =====
+
+export const getStartupBonusLivePool = async () => {
+  const response = await api.get('/api/v1/admin/startup-bonus/live-pool');
+  return response.data;
+};
+
+export const getStartupBonusPools = async (page = 1, limit = 12) => {
+  const response = await api.get('/api/v1/admin/startup-bonus/pools', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getStartupBonusPoolDetail = async (year: number, month: number) => {
+  const response = await api.get(`/api/v1/admin/startup-bonus/pools/${year}/${month}`);
+  return response.data;
+};
+
+export const getActiveStartupBonusUsers = async () => {
+  const response = await api.get('/api/v1/admin/startup-bonus/users');
+  return response.data;
+};
+
+export const getStartupBonusUserDetail = async (memberId: string) => {
+  const response = await api.get(`/api/v1/admin/startup-bonus/users/${memberId}`);
+  return response.data;
+};
+
+export const triggerStartupBonus = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/startup-bonus/trigger', { year, month });
+  return response.data;
+};
+
+export const applyStartupBonusCredits = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/startup-bonus/apply-credits', { year, month });
+  return response.data;
+};
+
+// ===== Leadership Bonus Admin APIs =====
+
+export const getLeadershipBonusLivePool = async () => {
+  const response = await api.get('/api/v1/admin/leadership-bonus/live-pool');
+  return response.data;
+};
+
+export const getLeadershipBonusPools = async (page = 1, limit = 12) => {
+  const response = await api.get('/api/v1/admin/leadership-bonus/pools', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getLeadershipBonusPoolDetail = async (year: number, month: number) => {
+  const response = await api.get(`/api/v1/admin/leadership-bonus/pools/${year}/${month}`);
+  return response.data;
+};
+
+export const getActiveLeadershipBonusUsers = async () => {
+  const response = await api.get('/api/v1/admin/leadership-bonus/users');
+  return response.data;
+};
+
+export const getLeadershipBonusUserDetail = async (memberId: string) => {
+  const response = await api.get(`/api/v1/admin/leadership-bonus/users/${memberId}`);
+  return response.data;
+};
+
+export const triggerLeadershipBonus = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/leadership-bonus/trigger', { year, month });
+  return response.data;
+};
+
+export const applyLeadershipBonusCredits = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/leadership-bonus/apply-credits', { year, month });
+  return response.data;
+};
+
+// ===== Tour Fund Admin APIs =====
+
+export const getTourFundLivePool = async () => {
+  const response = await api.get('/api/v1/admin/tour-fund/live-pool');
+  return response.data;
+};
+
+export const getTourFundPools = async (page = 1, limit = 12) => {
+  const response = await api.get('/api/v1/admin/tour-fund/pools', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getTourFundPoolDetail = async (year: number, month: number) => {
+  const response = await api.get(`/api/v1/admin/tour-fund/pools/${year}/${month}`);
+  return response.data;
+};
+
+export const getActiveTourFundUsers = async () => {
+  const response = await api.get('/api/v1/admin/tour-fund/users');
+  return response.data;
+};
+
+export const getTourFundUserDetail = async (memberId: string) => {
+  const response = await api.get(`/api/v1/admin/tour-fund/users/${memberId}`);
+  return response.data;
+};
+
+export const triggerTourFund = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/tour-fund/trigger', { year, month });
+  return response.data;
+};
+
+export const applyTourFundCredits = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/tour-fund/apply-credits', { year, month });
+  return response.data;
+};
+
+// ===== Health & Education Bonus Admin APIs =====
+
+export const getHealthEducationBonusLivePool = async () => {
+  const response = await api.get('/api/v1/admin/health-education-bonus/live-pool');
+  return response.data;
+};
+
+export const getHealthEducationBonusPools = async (page = 1, limit = 12) => {
+  const response = await api.get('/api/v1/admin/health-education-bonus/pools', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getHealthEducationBonusPoolDetail = async (year: number, month: number) => {
+  const response = await api.get(`/api/v1/admin/health-education-bonus/pools/${year}/${month}`);
+  return response.data;
+};
+
+export const getActiveHealthEducationBonusUsers = async () => {
+  const response = await api.get('/api/v1/admin/health-education-bonus/users');
+  return response.data;
+};
+
+export const getHealthEducationBonusUserDetail = async (memberId: string) => {
+  const response = await api.get(`/api/v1/admin/health-education-bonus/users/${memberId}`);
+  return response.data;
+};
+
+export const triggerHealthEducationBonus = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/health-education-bonus/trigger', { year, month });
+  return response.data;
+};
+
+export const applyHealthEducationBonusCredits = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/health-education-bonus/apply-credits', { year, month });
+  return response.data;
+};
+
+// ===== Bike & Car Fund Admin APIs =====
+
+export const getBikeCarFundLivePool = async () => {
+  const response = await api.get('/api/v1/admin/bike-car-fund/live-pool');
+  return response.data;
+};
+
+export const getBikeCarFundPools = async (page = 1, limit = 12) => {
+  const response = await api.get('/api/v1/admin/bike-car-fund/pools', {
+    params: { page, limit }
+  });
+  return response.data;
+};
+
+export const getBikeCarFundPoolDetail = async (year: number, month: number) => {
+  const response = await api.get(`/api/v1/admin/bike-car-fund/pools/${year}/${month}`);
+  return response.data;
+};
+
+export const getActiveBikeCarFundUsers = async () => {
+  const response = await api.get('/api/v1/admin/bike-car-fund/users');
+  return response.data;
+};
+
+export const getBikeCarFundUserDetail = async (memberId: string) => {
+  const response = await api.get(`/api/v1/admin/bike-car-fund/users/${memberId}`);
+  return response.data;
+};
+
+export const triggerBikeCarFund = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/bike-car-fund/trigger', { year, month });
+  return response.data;
+};
+
+export const applyBikeCarFundCredits = async (year: number, month: number) => {
+  const response = await api.post('/api/v1/admin/bike-car-fund/apply-credits', { year, month });
+  return response.data;
+};
+
 // Fetch Tree BV Summary for a specific user (Admin)
 export const getAdminTreeBVSummary = async (memberId: string) => {
   const response = await api.get(`/api/v1/admin/tree-bv-summary/${memberId}`);
