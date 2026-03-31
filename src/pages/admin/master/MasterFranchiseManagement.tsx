@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Network, Plus, Trash2, Shield, Search, CheckCircle2, Activity, IndianRupee } from "lucide-react";
+import { Trophy, Network, Plus, Trash2, Shield, Search, CheckCircle2, Activity, IndianRupee, AlertCircle, Check, X } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -28,6 +28,7 @@ interface MasterFranchiseResponse {
     master: FranchiseBasic;
     subFranchiseCount: number;
     subFranchises: FranchiseBasic[];
+    pendingSubFranchises: FranchiseBasic[];
     assignedAt: string;
 }
 
@@ -137,6 +138,27 @@ const MasterFranchiseManagement = () => {
 
     const formatCurrency = (amount: number) => 
         new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(amount || 0);
+
+    const handleApproveLink = async (masterId: string, subId: string) => {
+        try {
+            await api.put(`/api/v1/admin/master-franchises/${masterId}/approve-request/${subId}`);
+            toast.success("Sub-franchise officially linked to Master Network!");
+            fetchAllData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to approve link request");
+        }
+    };
+
+    const handleRejectLink = async (masterId: string, subId: string) => {
+        if (!confirm("Are you sure you want to reject this network link request?")) return;
+        try {
+            await api.delete(`/api/v1/admin/master-franchises/${masterId}/reject-request/${subId}`);
+            toast.success("Link Request rejected and cleared.");
+            fetchAllData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to reject link request");
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -323,6 +345,51 @@ const MasterFranchiseManagement = () => {
                                             </div>
                                         )}
                                     </div>
+                                    
+                                    {masterNode.pendingSubFranchises && masterNode.pendingSubFranchises.length > 0 && (
+                                        <div className="mt-3 pt-3 border-t">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h4 className="text-sm font-semibold flex items-center gap-2 text-amber-600">
+                                                    <AlertCircle className="h-4 w-4" />
+                                                    Pending Links
+                                                </h4>
+                                                <Badge variant="outline" className="bg-amber-100/50 text-amber-700 border-amber-300">
+                                                    {masterNode.pendingSubFranchises.length} New
+                                                </Badge>
+                                            </div>
+                                            <div className="space-y-2 mt-2 max-h-[150px] overflow-y-auto pr-1">
+                                                {masterNode.pendingSubFranchises.map(pending => (
+                                                    <div key={pending._id} className="flex flex-col text-sm p-2 rounded bg-amber-50 border border-amber-200 shadow-sm">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div className="max-w-[70%]">
+                                                                <span className="font-medium truncate block">{pending.shopName}</span>
+                                                                <span className="text-[10px] text-muted-foreground font-mono">{pending.vendorId}</span>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <Button 
+                                                                    size="icon" 
+                                                                    variant="ghost" 
+                                                                    className="h-7 w-7 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-300 rounded cursor-pointer"
+                                                                    onClick={() => handleApproveLink(masterNode.master._id, pending._id)}
+                                                                >
+                                                                    <Check className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button 
+                                                                    size="icon" 
+                                                                    variant="ghost" 
+                                                                    className="h-7 w-7 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 rounded cursor-pointer"
+                                                                    onClick={() => handleRejectLink(masterNode.master._id, pending._id)}
+                                                                >
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="mt-3 pt-3 border-t">
                                         <Button 
                                             variant="outline" 
@@ -361,27 +428,55 @@ const MasterFranchiseManagement = () => {
                             </div>
                         ) : liveData ? (
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-blue-50/50 p-3 rounded-md border border-blue-100">
-                                    <span className="text-sm font-medium text-blue-800">Own Differential (5% BV, ₹10/PV)</span>
-                                    <span className="font-bold text-blue-700">{formatCurrency(liveData.projectedOwnDifferential)}</span>
+                                <div className="flex flex-col bg-blue-50/50 p-4 rounded-md border border-blue-200 shadow-sm">
+                                    <h4 className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2">Own Differential (15% BV, ₹50/PV)</h4>
+                                    <div className="flex justify-between items-center text-sm mb-1">
+                                        <span className="text-blue-700/80">Gross Earnings</span>
+                                        <span className="font-semibold text-blue-700">{formatCurrency(liveData.projectedOwnDifferential)}</span>
+                                    </div>
+                                    {liveData.projectedOwnDifferential > 0 && (
+                                        <div className="flex justify-between items-center text-[11px] text-red-500 mb-2 pb-2 border-b border-blue-100">
+                                            <span>Deductions (Admin 5% + TDS 2%)</span>
+                                            <span>-{formatCurrency(liveData.ownAdminCharge + liveData.ownTdsCharge)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center mt-1">
+                                        <span className="text-sm font-bold text-blue-900">Net Expected</span>
+                                        <span className="font-bold text-lg text-blue-700">{formatCurrency(liveData.ownNet)}</span>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="flex justify-between items-center bg-purple-50/50 p-3 rounded-md border border-purple-100">
-                                        <span className="text-sm font-medium text-purple-800">Sub-Network Override</span>
-                                        <span className="font-bold text-purple-700">{formatCurrency(liveData.projectedSubOverride)}</span>
+                                    <div className="flex flex-col bg-purple-50/50 p-4 rounded-md border border-purple-200 shadow-sm">
+                                        <h4 className="text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">Sub-Network Override</h4>
+                                        <div className="flex justify-between items-center text-sm mb-1">
+                                            <span className="text-purple-700/80">Gross Earnings</span>
+                                            <span className="font-semibold text-purple-700">{formatCurrency(liveData.projectedSubOverride)}</span>
+                                        </div>
+                                        {liveData.projectedSubOverride > 0 && (
+                                            <div className="flex justify-between items-center text-[11px] text-red-500 mb-2 pb-2 border-b border-purple-100">
+                                                <span>Deductions (Admin 5% + TDS 2%)</span>
+                                                <span>-{formatCurrency(liveData.subAdminCharge + liveData.subTdsCharge)}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between items-center mt-1">
+                                            <span className="text-sm font-bold text-purple-900">Net Expected</span>
+                                            <span className="font-bold text-lg text-purple-700">{formatCurrency(liveData.subNet)}</span>
+                                        </div>
                                     </div>
                                     
                                     {liveData.subNetworkDetails && liveData.subNetworkDetails.length > 0 && (
                                         <div className="border border-purple-100 rounded-md bg-purple-50/30 p-2 max-h-[140px] overflow-y-auto space-y-1">
                                             {liveData.subNetworkDetails.map((sub: any, i: number) => (
-                                                <div key={i} className="flex justify-between items-center text-xs p-1.5 hover:bg-purple-100/50 rounded transition-colors">
+                                                <div key={i} className="flex justify-between items-center text-xs p-2 hover:bg-purple-100/50 rounded transition-colors border-b border-purple-100/30 last:border-b-0">
                                                     <div>
                                                         <span className="font-medium block truncate max-w-[120px]">{sub.shopName}</span>
                                                         <span className="text-[9px] text-muted-foreground">{sub.vendorId}</span>
+                                                        <span className="text-[9px] text-muted-foreground block mt-0.5">BV:{sub.bvContribution} | PV:{sub.pvContribution}</span>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <span className="font-bold text-purple-600 block">{formatCurrency(sub.earnedOverride)}</span>
-                                                        <span className="text-[9px] text-muted-foreground max-w-[80px]">BV:{sub.bvContribution} PV:{sub.pvContribution}</span>
+                                                    <div className="text-right flex flex-col items-end">
+                                                        <span className="text-[9px] text-muted-foreground line-through">₹{sub.earnedOverride.toFixed(2)}</span>
+                                                        <span className="text-[9px] text-red-500/80 mb-0.5">-₹{(sub.adminCharge + sub.tdsCharge).toFixed(2)}</span>
+                                                        <span className="font-bold text-emerald-600 block">₹{sub.netOverride.toFixed(2)}</span>
                                                     </div>
                                                 </div>
                                             ))}
@@ -389,17 +484,8 @@ const MasterFranchiseManagement = () => {
                                     )}
                                 </div>
                                 
-                                <div className="border border-red-100 rounded-md p-3 space-y-2">
-                                    <h5 className="text-xs font-bold text-red-500 uppercase">Estimated Deductions</h5>
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground text-xs">Admin Charge (5%)</span>
-                                        <span className="text-red-600 font-medium font-mono">-{formatCurrency(liveData.adminCharge)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-muted-foreground text-xs">TDS (2%)</span>
-                                        <span className="text-red-600 font-medium font-mono">-{formatCurrency(liveData.tdsCharge)}</span>
-                                    </div>
-                                </div>
+                                
+                                {/* Total Deductions Block Removed to ensure focus on Individual Category breakdowns */}
 
                                 <div className="pt-2 border-t mt-4 flex justify-between items-center">
                                     <span className="font-bold uppercase tracking-wider text-sm">Net Payout Expected</span>

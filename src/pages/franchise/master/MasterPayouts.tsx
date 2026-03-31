@@ -133,7 +133,7 @@ const FranchiseMasterPayouts = () => {
                         Master Bonus Ledger
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Your extra 5% BV and ₹10 PV earnings + Override commissions from your sub-network.
+                        Your extra 15% BV and ₹50 PV earnings + Override commissions from your sub-network.
                     </p>
                 </div>
             </div>
@@ -149,17 +149,23 @@ const FranchiseMasterPayouts = () => {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
                             <div className="space-y-1">
-                                <p className="text-xs text-muted-foreground">Own Differential (+5% BV, ₹10/PV)</p>
+                                <p className="text-xs text-muted-foreground">Own Differential (+15% BV, ₹50/PV)</p>
                                 <p className="text-xl font-semibold text-foreground">{formatCurrency(liveData.projectedOwnDifferential)}</p>
+                                {liveData.projectedOwnDifferential > 0 && (
+                                    <div className="text-[10px] mt-1 flex flex-col gap-0.5">
+                                        <span className="text-red-500/80">- {formatCurrency(liveData.ownAdminCharge + liveData.ownTdsCharge)} (7% Deduction)</span>
+                                        <span className="font-bold text-emerald-600 dark:text-emerald-400">Net Expected: {formatCurrency(liveData.ownNet)}</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-1">
-                                <div className="flex justify-between items-center">
+                                <div className="flex justify-between items-center w-full">
                                     <p className="text-xs text-muted-foreground">Sub-Network (+5% BV, ₹10/PV)</p>
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <button className="text-[10px] text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1 font-medium cursor-pointer">
+                                            <button className="text-[10px] text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1 font-medium cursor-pointer ml-2">
                                                 <ListOrdered className="h-3 w-3" /> Details
                                             </button>
                                         </DialogTrigger>
@@ -177,12 +183,14 @@ const FranchiseMasterPayouts = () => {
                                                             <div>
                                                                 <p className="font-semibold text-sm line-clamp-1">{sub.shopName}</p>
                                                                 <p className="text-xs font-mono text-muted-foreground">{sub.vendorId}</p>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className="font-bold text-emerald-600">{formatCurrency(sub.earnedOverride)}</p>
                                                                 <p className="text-[10px] text-muted-foreground mt-0.5">
                                                                     BV: {sub.bvContribution} | PV: {sub.pvContribution}
                                                                 </p>
+                                                            </div>
+                                                            <div className="text-right flex flex-col items-end">
+                                                                <p className="text-[10px] text-muted-foreground line-through">₹{sub.earnedOverride.toFixed(2)}</p>
+                                                                <p className="text-[10px] text-red-500/80 mb-0.5">-₹{(sub.adminCharge + sub.tdsCharge).toFixed(2)}</p>
+                                                                <p className="font-bold text-sm text-emerald-600 block">₹{sub.netOverride.toFixed(2)}</p>
                                                             </div>
                                                         </div>
                                                     ))
@@ -196,11 +204,17 @@ const FranchiseMasterPayouts = () => {
                                     </Dialog>
                                 </div>
                                 <p className="text-xl font-semibold text-foreground">{formatCurrency(liveData.projectedSubOverride)}</p>
+                                {liveData.projectedSubOverride > 0 && (
+                                    <div className="text-[10px] mt-1 flex flex-col gap-0.5">
+                                        <span className="text-red-500/80">- {formatCurrency(liveData.subAdminCharge + liveData.subTdsCharge)} (7% Deduction)</span>
+                                        <span className="font-bold text-emerald-600 dark:text-emerald-400">Net Expected: {formatCurrency(liveData.subNet)}</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-1 hidden md:block">
-                                <p className="text-xs text-muted-foreground">Est. Deductions (7%)</p>
-                                <p className="text-sm font-semibold text-red-500/80">
-                                    -{formatCurrency(liveData.adminCharge + liveData.tdsCharge)}
+                                <p className="text-xs text-muted-foreground">Total Pre-Deduction</p>
+                                <p className="text-sm font-semibold text-muted-foreground">
+                                    {formatCurrency(liveData.totalProjectedGross)}
                                 </p>
                             </div>
                             <div className="space-y-1 bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-lg border border-emerald-100 dark:border-emerald-900/50">

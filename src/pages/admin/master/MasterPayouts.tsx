@@ -102,7 +102,7 @@ const AdminMasterPayouts = () => {
                         Master Franchise Payouts
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Isolated Top-Tier Earnings (5% BV / ₹10 PV Differentials & Overrides)
+                        Isolated Top-Tier Earnings (15% BV / ₹50 PV Differentials & 5% BV / ₹10 PV Overrides)
                     </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={fetchPayouts} disabled={isLoading} className="gap-2">
