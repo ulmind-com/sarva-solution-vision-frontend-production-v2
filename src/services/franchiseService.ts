@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8001';
+const API_BASE_URL = 'https://sarvasolution-backend-production-v2.onrender.com';
 
 // Create a separate axios instance for franchise APIs that uses franchise token
 const franchiseApi = axios.create({
