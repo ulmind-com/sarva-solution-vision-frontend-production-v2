@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Info, TrendingUp, Calendar, ArrowRight, ArrowLeft, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import IsolatedBvHistory from "@/components/dashboard/IsolatedBvHistory";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -257,7 +259,16 @@ export default function SsvplSuperBonus() {
                 </div>
             )}
 
-            {/* Payout History */}
+            
+            {/* History Tabs */}
+            <Tabs defaultValue="payouts" className="mt-8">
+                <TabsList className="mb-4 bg-muted/50 p-1 border border-border/50">
+                    <TabsTrigger value="payouts" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Bonus Payout History</TabsTrigger>
+                    <TabsTrigger value="bv-match" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">BV Match History</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="payouts" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                    {/* Payout History */}
             <Card className="glass premium-shadow overflow-hidden border-yellow-500/10 mt-8">
                 <CardHeader className="border-b border-border/50 bg-yellow-50/50 dark:bg-yellow-950/20 pb-4">
                     <CardTitle className="text-yellow-900 dark:text-yellow-100">SSVPL Super Bonus Payout History</CardTitle>
@@ -329,6 +340,13 @@ export default function SsvplSuperBonus() {
                     )}
                 </CardContent>
             </Card>
+                </TabsContent>
+
+                <TabsContent value="bv-match" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                    <IsolatedBvHistory type="yearly" />
+                </TabsContent>
+            </Tabs>
+
         </div>
     );
 }

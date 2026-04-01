@@ -358,3 +358,22 @@ export const getPersonalRepurchaseBV = async () => {
   const response = await api.get('/api/v1/user/self-repurchase-bonus/personal-bv');
   return response.data;
 };
+
+// ============================================
+// ISOLATED HISTORICAL BV TRACKING APIS
+// ============================================
+
+export const getMonthlyBvHistory = async (count = 12) => {
+  const response = await api.get('/api/v1/user/bv-history/monthly', { params: { count } });
+  return response.data;
+};
+
+export const getHalfYearlyBvHistory = async (count = 4) => {
+  const response = await api.get('/api/v1/user/bv-history/half-yearly', { params: { count } });
+  return response.data;
+};
+
+export const getYearlyBvHistory = async (count = 3) => {
+  const response = await api.get('/api/v1/user/bv-history/yearly', { params: { count } });
+  return response.data;
+};
