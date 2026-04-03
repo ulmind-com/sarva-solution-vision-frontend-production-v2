@@ -44,7 +44,8 @@ import {
   Receipt,
   Trophy,
   Network,
-  Banknote
+  Banknote,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -78,6 +79,7 @@ const simpleMenuItems: MenuItem[] = [
   { path: '/admin/profile', label: 'My Profile', icon: UserCog },
   { path: '/admin/company-bv-history', label: 'Company BV History', icon: TrendingUp },
   { path: '/admin/franchise-sale-logs', label: 'Franchise Sale Logs', icon: Receipt },
+  { path: '/admin/settings', label: 'Site Settings', icon: Settings },
 ];
 
 const menuSections: MenuSection[] = [

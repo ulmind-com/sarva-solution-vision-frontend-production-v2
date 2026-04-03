@@ -94,6 +94,7 @@ import FranchiseRequests from "./pages/admin/franchise/FranchiseRequests";
 import AdminFranchisePayout from "./pages/admin/franchise/AdminFranchisePayout";
 import FranchisePayoutRequests from "./pages/admin/franchise/FranchisePayoutRequests";
 import FranchiseInventoryView from "./pages/admin/franchise/FranchiseInventoryView";
+import SiteSettings from "./pages/admin/SiteSettings";
 
 // Franchise Portal
 import FranchiseDashboard from "./pages/franchise/FranchiseDashboard";
@@ -370,6 +371,13 @@ const AppRoutes = () => {
         <ProtectedRoute requireAdmin>
           <AdminLayout>
             <PayoutRequests />
+          </AdminLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/settings" element={
+        <ProtectedRoute requireAdmin>
+          <AdminLayout>
+            <SiteSettings />
           </AdminLayout>
         </ProtectedRoute>
       } />

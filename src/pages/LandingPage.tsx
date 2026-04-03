@@ -4,6 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import BannerPopup from '@/components/BannerPopup';
+import GallerySection from '@/components/GallerySection';
 import {
   Sprout,
   Fish,
@@ -295,6 +297,9 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Gallery Section */}
+      <GallerySection />
+
       {/* Banking Details Section */}
       <section id="banking" className="py-20 md:py-28 bg-muted/30">
         <div className="container mx-auto px-6">
@@ -505,6 +510,9 @@ const LandingPage = () => {
 
       {/* WhatsApp Floating Widget */}
       <WhatsAppWidget />
+
+      {/* Dynamic Banner Popup */}
+      <BannerPopup />
     </div>
   );
 };
