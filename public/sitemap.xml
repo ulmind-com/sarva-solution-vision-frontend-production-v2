@@ -35,7 +35,7 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://www.sarvasolutionvision.com/logo.png</image:loc>
-      <image:title>About Sarva Solution Vision - Our Mission & Story</image:title>
+      <image:title>About Sarva Solution Vision - Our Mission &amp; Story</image:title>
       <image:caption>Learn about Sarva Solution Vision Pvt. Ltd. (SSVPL) - our founders, mission, and vision for a better tomorrow</image:caption>
     </image:image>
   </url>
@@ -50,7 +50,7 @@
     <priority>0.9</priority>
     <image:image>
       <image:loc>https://www.sarvasolutionvision.com/logo.png</image:loc>
-      <image:title>SSV Product Segments - Agriculture, Health Care, Personal Care & More</image:title>
+      <image:title>SSV Product Segments - Agriculture, Health Care, Personal Care &amp; More</image:title>
       <image:caption>Explore Sarva Solution Vision product segments: Agriculture, Aquaculture, Ayurvedic Healthcare, Personal Care, Home Care, Luxury Goods</image:caption>
     </image:image>
   </url>
@@ -65,7 +65,7 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://www.sarvasolutionvision.com/teamPhoto.png</image:loc>
-      <image:title>Sarva Solution Vision Gallery - Events & Team Photos</image:title>
+      <image:title>Sarva Solution Vision Gallery - Events &amp; Team Photos</image:title>
       <image:caption>Official photo gallery of Sarva Solution Vision Pvt. Ltd. - events, team gatherings, and product showcases</image:caption>
     </image:image>
     <image:image>
