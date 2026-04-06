@@ -1,6 +1,46 @@
 {
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/(.*\\.xml)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*\\.txt)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*\\.png)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*\\.jpg)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*\\.svg)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*\\.ico)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*\\.js)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*\\.css)",
+      "destination": "/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
