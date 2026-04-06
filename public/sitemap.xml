@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset 
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  xsi:schemaLocation="
+    http://www.sitemaps.org/schemas/sitemap/0.9
+    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+    http://www.google.com/schemas/sitemap-image/1.1
+    http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd">
+
+  <!-- =====================================================
+       HOME PAGE — Highest priority
+  ====================================================== -->
+  <url>
+    <loc>https://www.sarvasolutionvision.com/</loc>
+    <lastmod>2026-04-06T23:05:00+05:30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.sarvasolutionvision.com/logo.png</image:loc>
+      <image:title>Sarva Solution Vision Pvt. Ltd. - Best Direct Selling Company in India</image:title>
+      <image:caption>India's leading direct selling and network marketing company offering premium organic products - One Step Solution for a Better Tomorrow</image:caption>
+    </image:image>
+  </url>
+
+  <!-- =====================================================
+       ABOUT PAGE — Company info, founders, mission
+  ====================================================== -->
+  <url>
+    <loc>https://www.sarvasolutionvision.com/about</loc>
+    <lastmod>2026-04-06T23:05:00+05:30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.sarvasolutionvision.com/logo.png</image:loc>
+      <image:title>About Sarva Solution Vision - Our Mission & Story</image:title>
+      <image:caption>Learn about Sarva Solution Vision Pvt. Ltd. (SSVPL) - our founders, mission, and vision for a better tomorrow</image:caption>
+    </image:image>
+  </url>
+
+  <!-- =====================================================
+       SEGMENTS PAGE — Product categories
+  ====================================================== -->
+  <url>
+    <loc>https://www.sarvasolutionvision.com/segments</loc>
+    <lastmod>2026-04-06T23:05:00+05:30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.sarvasolutionvision.com/logo.png</image:loc>
+      <image:title>SSV Product Segments - Agriculture, Health Care, Personal Care & More</image:title>
+      <image:caption>Explore Sarva Solution Vision product segments: Agriculture, Aquaculture, Ayurvedic Healthcare, Personal Care, Home Care, Luxury Goods</image:caption>
+    </image:image>
+  </url>
+
+  <!-- =====================================================
+       GALLERY PAGE — Photos and media
+  ====================================================== -->
+  <url>
+    <loc>https://www.sarvasolutionvision.com/gallery</loc>
+    <lastmod>2026-04-06T23:05:00+05:30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.sarvasolutionvision.com/teamPhoto.png</image:loc>
+      <image:title>Sarva Solution Vision Gallery - Events & Team Photos</image:title>
+      <image:caption>Official photo gallery of Sarva Solution Vision Pvt. Ltd. - events, team gatherings, and product showcases</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.sarvasolutionvision.com/logo.png</image:loc>
+      <image:title>Sarva Solution Vision Logo</image:title>
+      <image:caption>Official logo of Sarva Solution Vision Pvt. Ltd. (SSV/SSVPL)</image:caption>
+    </image:image>
+  </url>
+
+  <!-- =====================================================
+       CONTACT PAGE — Contact info
+  ====================================================== -->
+  <url>
+    <loc>https://www.sarvasolutionvision.com/contact</loc>
+    <lastmod>2026-04-06T23:05:00+05:30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://www.sarvasolutionvision.com/logo.png</image:loc>
+      <image:title>Contact Sarva Solution Vision - Get in Touch</image:title>
+      <image:caption>Contact Sarva Solution Vision Pvt. Ltd. at +91 98327 75700 - Kolkata, West Bengal, India</image:caption>
+    </image:image>
+  </url>
+
+</urlset>
