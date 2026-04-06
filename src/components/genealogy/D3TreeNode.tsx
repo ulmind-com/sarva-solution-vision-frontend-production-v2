@@ -304,28 +304,6 @@ const HoverTooltip = ({
                   <span className="text-xs font-bold text-destructive">{data.leftCompleteInactive ?? 0}</span>
                 </div>
               </div>
-
-              {/* Row 2: Business Volume (BV) */}
-              <div className="flex flex-col gap-1 py-1.5 px-2 bg-chart-1/10 rounded">
-                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
-                  <span>CURRENT MONTH</span>
-                  <span className="font-bold text-chart-1 text-[10px]">{(data.thisMonthLeftLegBV ?? 0).toLocaleString()} BV</span>
-                </div>
-                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
-                  <span>HALF YEARLY</span>
-                  <span className="font-bold text-chart-1 text-[10px]">{(data.halfYearlyLeftLegBV ?? 0).toLocaleString()} BV</span>
-                </div>
-                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
-                  <span>ANNUAL</span>
-                  <span className="font-bold text-chart-1 text-[10px]">{(data.annualLeftLegBV ?? 0).toLocaleString()} BV</span>
-                </div>
-              </div>
-
-              {/* Row 3: Stars */}
-              <div className="flex items-center justify-center gap-1.5 py-1 bg-chart-2/10 rounded">
-                <StarIcon className="h-3 w-3 text-chart-2 fill-chart-2" />
-                <span className="text-[10px] font-bold text-chart-2">{data.leftLegStars ?? 0} Stars</span>
-              </div>
             </div>
 
             {/* Right Leg Stats */}
@@ -348,28 +326,6 @@ const HoverTooltip = ({
                   <XCircle className="h-3 w-3 text-destructive" />
                   <span className="text-xs font-bold text-destructive">{data.rightCompleteInactive ?? 0}</span>
                 </div>
-              </div>
-
-              {/* Row 2: Business Volume (BV) */}
-              <div className="flex flex-col gap-1 py-1.5 px-2 bg-chart-1/10 rounded">
-                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
-                  <span>CURRENT MONTH</span>
-                  <span className="font-bold text-chart-1 text-[10px]">{(data.thisMonthRightLegBV ?? 0).toLocaleString()} BV</span>
-                </div>
-                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
-                  <span>HALF YEARLY</span>
-                  <span className="font-bold text-chart-1 text-[10px]">{(data.halfYearlyRightLegBV ?? 0).toLocaleString()} BV</span>
-                </div>
-                <div className="flex justify-between items-center text-[9px] text-chart-1/80 font-medium tracking-wide">
-                  <span>ANNUAL</span>
-                  <span className="font-bold text-chart-1 text-[10px]">{(data.annualRightLegBV ?? 0).toLocaleString()} BV</span>
-                </div>
-              </div>
-
-              {/* Row 3: Stars */}
-              <div className="flex items-center justify-center gap-1.5 py-1 bg-chart-2/10 rounded">
-                <StarIcon className="h-3 w-3 text-chart-2 fill-chart-2" />
-                <span className="text-[10px] font-bold text-chart-2">{data.rightLegStars ?? 0} Stars</span>
               </div>
             </div>
           </div>

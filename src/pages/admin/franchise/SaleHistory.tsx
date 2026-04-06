@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { History, Search, Eye, Download, Loader2, FileText, IndianRupee, Package } from 'lucide-react';
+import { History, Search, Eye, Download, Loader2, FileText, IndianRupee, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -78,19 +78,27 @@ const SaleHistory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
     fetchSales();
-  }, []);
+  }, [currentPage]);
 
   const fetchSales = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get('/api/v1/admin/sales/list');
+      const response = await api.get(`/api/v1/admin/sales/list?page=${currentPage}&limit=20`);
       // Handle nested response: { data: { invoices: [...] } } or { data: { sales: [...] } }
       const responseData = response.data?.data || response.data;
       const salesArray = responseData?.invoices || responseData?.sales || [];
       setSales(Array.isArray(salesArray) ? salesArray : []);
+      
+      if (responseData?.pagination) {
+        setTotalPages(responseData.pagination.totalPages || 1);
+        setTotalCount(responseData.pagination.totalCount || 0);
+      }
     } catch (error) {
       console.error('Error fetching sales:', error);
       toast.error('Failed to load sales history');
@@ -155,6 +163,14 @@ const SaleHistory = () => {
   const handleViewDetails = (sale: Sale) => {
     setSelectedSale(sale);
     setShowDetails(true);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
   };
 
   return (
@@ -299,6 +315,60 @@ const SaleHistory = () => {
                 })}
               </TableBody>
             </Table>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && !isLoading && (
+            <div className="flex items-center justify-between px-4 py-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Showing page <span className="font-medium text-foreground">{currentPage}</span> of{' '}
+                <span className="font-medium text-foreground">{totalPages}</span>
+                {totalCount > 0 && ` (${totalCount} total entries)`}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum = currentPage;
+                    if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                    else pageNum = currentPage - 2 + i;
+                    
+                    if (pageNum > 0 && pageNum <= totalPages) {
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

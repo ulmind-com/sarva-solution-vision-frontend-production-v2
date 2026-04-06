@@ -20,6 +20,7 @@ import {
   Twitter,
   Instagram,
   Linkedin,
+  Youtube,
   BookOpen,
   Award,
   Truck,
@@ -30,7 +31,8 @@ import {
   Globe,
   Leaf,
   MapPin,
-  Building2
+  Building2,
+  Download
 } from 'lucide-react';
 
 const fadeInUp = {
@@ -114,6 +116,7 @@ const LandingPage = () => {
             <button onClick={() => scrollToSection('home')} className={`font-medium transition-colors text-sm ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white drop-shadow-sm'}`}>Home</button>
             <button onClick={() => scrollToSection('about-future')} className={`font-medium transition-colors text-sm ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white drop-shadow-sm'}`}>About</button>
             <button onClick={() => scrollToSection('segments')} className={`font-medium transition-colors text-sm ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white drop-shadow-sm'}`}>Segments</button>
+            <button onClick={() => scrollToSection('gallery')} className={`font-medium transition-colors text-sm ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white drop-shadow-sm'}`}>Gallery</button>
             <button onClick={() => scrollToSection('banking')} className={`font-medium transition-colors text-sm ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white drop-shadow-sm'}`}>Bank Details</button>
             <button onClick={() => scrollToSection('contact')} className={`font-medium transition-colors text-sm ${isScrolled ? 'text-foreground/80 hover:text-primary' : 'text-white/90 hover:text-white drop-shadow-sm'}`}>Contact</button>
           </div>
@@ -184,9 +187,17 @@ const LandingPage = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Our Product Segments
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
               Discover our diverse range of premium products designed for holistic well-being.
             </p>
+            <a
+              href="/brochure.pdf"
+              download
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
+              <Download className="h-5 w-5" />
+              Download Brochure
+            </a>
           </motion.div>
 
           <motion.div
@@ -464,17 +475,20 @@ const LandingPage = () => {
             </div>
 
             <div className="flex justify-center gap-4">
-              <a href="https://www.facebook.com/share/187rjGnTre/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-teal-600 transition-colors">
+              <a href="https://www.facebook.com/share/187rjGnTre/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-[#1877F2] transition-colors">
                 <Facebook className="h-5 w-5 text-white" />
               </a>
-              <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-teal-600 transition-colors">
+              <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-[#1DA1F2] transition-colors">
                 <Twitter className="h-5 w-5 text-white" />
               </a>
-              <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-teal-600 transition-colors">
+              <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-gradient-to-br hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] transition-colors">
                 <Instagram className="h-5 w-5 text-white" />
               </a>
-              <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-teal-600 transition-colors">
+              <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-[#0A66C2] transition-colors">
                 <Linkedin className="h-5 w-5 text-white" />
+              </a>
+              <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-[#FF0000] transition-colors">
+                <Youtube className="h-5 w-5 text-white" />
               </a>
             </div>
 

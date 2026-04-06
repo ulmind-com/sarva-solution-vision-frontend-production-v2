@@ -15,6 +15,7 @@ import { TreeNodeData } from './TreeNode';
 import { D3TreeNodeDatum, EmptyD3Node, ActiveD3Node } from './D3TreeNode';
 import { transformToD3Format } from './treeUtils';
 import TreeBVSummaryCard from './TreeBVSummaryCard';
+import StarCountCard from './StarCountCard';
 
 interface TreeApiResponse {
   data: TreeNodeData;
@@ -536,8 +537,11 @@ const D3GenealogyTree = () => {
         />
       )}
 
-      {/* Tree BV Summary Card */}
-      <TreeBVSummaryCard memberId={currentRootId} isAdmin={false} />
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <TreeBVSummaryCard memberId={currentRootId || treeData?.memberId} isAdmin={false} />
+        <StarCountCard memberId={currentRootId || treeData?.memberId} />
+      </div>
 
       {/* Main Tree Card */}
       <Card className="border-border overflow-hidden">
