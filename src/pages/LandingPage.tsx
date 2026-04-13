@@ -503,9 +503,22 @@ const LandingPage = () => {
             <p className="text-slate-400 text-sm">
               © 2026 Sarva Solution Vision Pvt. Ltd. All rights reserved.
             </p>
-            <p className="text-slate-400 text-sm">
-              Developed by <a href="https://www.ulmind.com" target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-500 hover:text-emerald-400 hover:underline">ULMiND</a>
-            </p>
+            <div className="flex items-center gap-2 mr-16 md:mr-20">
+              <span className="text-slate-400 text-sm">Developed by</span>
+              <a
+                href="https://www.ulmind.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visit ULMIND"
+                className="inline-flex items-center opacity-85 hover:opacity-100 transition-all duration-300 hover:scale-105 hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+              >
+                <img
+                  src="/ULMIND_logo.png"
+                  alt="ULMIND"
+                  className="h-9 w-auto object-contain"
+                />
+              </a>
+            </div>
           </div>
         </div>
       </footer>
